@@ -1,8 +1,6 @@
 <template>
     <section id="menu">
-        <el-tooltip class="box-item" effect="dark" content="首页" placement="right">
-            <img class="logo" src="../assets/logo.png" onclick="" />
-        </el-tooltip>
+        <img class="logo" src="../assets/logo.png" onclick="" />
         <el-tooltip class="box-item" effect="dark" content="组装" placement="right">
             <div id="assy" class="site" onclick=""></div>
         </el-tooltip>
