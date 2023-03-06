@@ -36,6 +36,7 @@ export default {
         onSubmit(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
+                    sessionStorage.setItem('isLogin', 'true');
                     this.$router.push('/map');
                 } else {
                     console.log('error submit!!');

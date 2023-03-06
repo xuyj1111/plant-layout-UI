@@ -9,7 +9,8 @@ const routes = [
     {
         path: '/login',
         name: 'login',
-        component: LoginView
+        component: LoginView,
+        alias: '/logout'
     },
     {
         path: '/map',
