@@ -2,13 +2,13 @@
     <div id="back">
         <el-form ref="form" :model="form" :rules="rules" class="login-box">
             <h2 class="title">欢迎登陆</h2>
-            <el-form-item label="账号" class="item">
+            <el-form-item label="账号" class="item" prop="name">
                 <el-input type="text" placeholder="请输入用户名" v-model="form.name" />
             </el-form-item>
-            <el-form-item label="密码" class="item">
+            <el-form-item label="密码" class="item" prop="password">
                 <el-input type="password" placeholder="请输入密码" v-model="form.password" />
             </el-form-item>
-            <el-button type="primary" @click="onSubmit" class="login-button">登录</el-button>
+            <el-button type="primary" @click="onSubmit('form')" class="login-button">登录</el-button>
         </el-form>
     </div>
 </template>
@@ -21,14 +21,27 @@ export default {
             form: {
                 name: "",
                 password: ""
+            },
+            rules: {
+                name: [
+                    { required: true, message: '账号不能为空', trigger: 'submit' }
+                ],
+                password: [
+                    { required: true, message: '密码不能为空', trigger: 'submit' }
+                ]
             }
-        };
+        }
     },
     methods: {
-        onSubmit() {
-            // 进行登录验证，调用后端API等
-            // 如果登录成功，跳转到主页
-            this.$router.push('/map');
+        onSubmit(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    this.$router.push('/map');
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
+            });
         }
     }
 };
