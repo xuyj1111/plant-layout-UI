@@ -1,7 +1,4 @@
 <template>
-  <!-- <Map /> -->
-  <!-- <Login /> -->
-
   <router-view></router-view>
 </template>
 

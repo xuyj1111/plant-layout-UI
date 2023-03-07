@@ -18,17 +18,13 @@ const routes = [
         component: MapView
     },
     {
-        path: '/404',
-        name: '404',
-        component: NotFoundView
-    },
-    {
         path: '/',
         redirect: '/login'
     },
     {
-        path: '/:pathMatch(.*)',
-        redirect: '/404'
+        path: '/:catchAll(.*)',
+        name: '404',
+        component: NotFoundView
     }
 ]
 
@@ -46,9 +42,9 @@ const router = createRouter({
      * 此种方式，需要后台配合做重定向，否则会出现404
      * 原理：H5 pushState()
      */
-    history:createWebHistory(),
+    history: createWebHistory(),
     routes
 })
 
- 
+
 export default router;
