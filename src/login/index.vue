@@ -14,6 +14,7 @@
 </template>
   
 <script>
+import qs from 'qs';
 export default {
     name: "Login",
     data() {
@@ -36,8 +37,17 @@ export default {
         onSubmit(formName) {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    sessionStorage.setItem('isLogin', 'true');
-                    this.$router.push('/map');
+                    this.$axiosInstance.post("/login", qs.stringify({
+                        user: this.form.name,
+                        pwd: this.form.password
+                    })).then(function (response) {
+                        sessionStorage.setItem('isLogin', 'true');
+                        this.$router.push('/map');
+                    }).catch(function (error) {
+                        console.log(error);
+                        window.alert('账号密码错误！请重新输入！');
+                        return false;
+                    })
                 } else {
                     console.log('error submit!!');
                     return false;
