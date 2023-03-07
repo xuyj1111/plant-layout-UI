@@ -36,13 +36,14 @@ export default {
     methods: {
         onSubmit(formName) {
             this.$refs[formName].validate((valid) => {
+                var that = this;
                 if (valid) {
-                    this.$axiosInstance.post("/login", qs.stringify({
+                    this.$axiosInstance.post("/login", {
                         user: this.form.name,
                         pwd: this.form.password
-                    })).then(function (response) {
+                    }).then(function (response) {
                         sessionStorage.setItem('isLogin', 'true');
-                        this.$router.push('/map');
+                        that.$router.push('/map');
                     }).catch(function (error) {
                         console.log(error);
                         window.alert('账号密码错误！请重新输入！');
