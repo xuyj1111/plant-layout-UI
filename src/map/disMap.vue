@@ -1,13 +1,30 @@
 <template>
     <!-- 显示地图 -->
     <section id="main">
-        <canvas width="870" height="570"> </canvas>
+        <canvas ref="map" :width="map.width" :height="map.height"> </canvas>
     </section>
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
-    name: 'DisMap'
+    name: 'DisMap',
+    data() {
+        return {
+        }
+    },
+    mounted() {
+        window.addEventListener('load', this.init)
+    },
+    computed: {
+        ...mapState(['map'])
+    },
+    methods: {
+        init() {
+            
+        }
+    }
 }
 </script>
 

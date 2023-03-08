@@ -5,6 +5,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import router from './router'
 import Vuex from 'vuex'
+import store from './store'
 
 const app = createApp(App);
 
@@ -23,6 +24,8 @@ app.use(ElementPlus);
 app.use(router);
 // 加载 vuex
 app.use(Vuex);
+// 加载公共变量
+app.use(store);
 
 app.mount('#app');
 

@@ -79,6 +79,12 @@
         </div>
 
 
+        <div id="map-button">
+            <button @click="bigger()">+</button>
+            <span></span>
+            <button @click="smaller()">-</button>
+            <span>&nbsp;&nbsp;{{ map.per }}%</span>
+        </div>
         <!-- 缩略图 -->
         <div id="canvas">
             <canvas width="203" height="133"> </canvas>
@@ -88,6 +94,7 @@
 
 <script>
 import { Search } from '@element-plus/icons-vue'
+import { mapState } from 'vuex'
 
 export default {
     name: 'Operation',
@@ -104,12 +111,30 @@ export default {
                 conveyor: ""
             }
         }
+    },
+    computed: {
+        ...mapState(['map'])
+    },
+    methods: {
+        bigger() {
+            if (this.map.per < 100) {
+                this.map.width += 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
+                this.map.height += 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
+                this.map.per += 10;
+            }
+        },
+        smaller() {
+            if (this.map.per > 0) {
+                this.map.width -= 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
+                this.map.height -= 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
+                this.map.per -= 10;
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
-
 /* 操作栏 */
 #operation {
     /* 高度百分百，宽度固定 250px */
@@ -152,6 +177,9 @@ export default {
 }
 
 /* 操作栏的放大缩小按钮 */
+#map-button {
+    margin: 0 17px;
+}
 
 /* 输入框+导入按钮 */
 
