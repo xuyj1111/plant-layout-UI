@@ -1,7 +1,7 @@
 <template>
     <!-- 显示地图 -->
     <section id="main">
-        <canvas ref="map" :width="map.width" :height="map.height"> </canvas>
+        <canvas ref="mapDom" :width="map.width" :height="map.height"> </canvas>
     </section>
 </template>
 
@@ -12,17 +12,28 @@ export default {
     name: 'DisMap',
     data() {
         return {
+            // 地图中的图形
+            shapes: ""
         }
     },
     mounted() {
-        window.addEventListener('load', this.init)
+        var that = this;
+        window.addEventListener('load', this.init);
+        // 地图中的点击事件
+        this.$refs.mapDom.addEventListener('click', function (e) {
+            that.draw({ x: e.offsetX, y: e.offsetY });
+        }, false);
     },
     computed: {
         ...mapState(['map'])
     },
     methods: {
         init() {
-            
+            // 请求获取地图数据
+        },
+        draw(p) {
+            console.log(p.x);
+            console.log(p.y);
         }
     }
 }

@@ -2,6 +2,8 @@ import { createStore } from 'vuex'
 
 export default createStore({
     state: {
+        // 厂房
+        plant: 'assy',
         // 画布
         map: {
             width: 870,
