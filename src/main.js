@@ -29,7 +29,7 @@ app.use(store);
 
 app.mount('#app');
 
-
+// 每次跳转网址前执行
 router.beforeEach((to, from, next) => {
     let isLogin = sessionStorage.getItem('isLogin');
     if (to.path == '/logout') {

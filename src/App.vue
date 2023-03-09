@@ -3,8 +3,8 @@
 </template>
 
 <script>
-import Map from './map';
-import Login from './login';
+import Map from './modules/map/index.vue';
+import Login from './modules/login/index.vue';
 
 export default {
   name: 'app',

@@ -1,10 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router"
-import LoginView from '../login'
-import MapView from '../map'
-import NotFoundView from '../NotFound.vue'
+import LoginView from '../modules/login/index.vue'
+import MapView from '../modules/map/index.vue'
+import NotFoundView from '../modules/NotFound.vue'
 
 // 配置信息中需要页面的相关配置
-
 const routes = [
     {
         path: '/login',
@@ -28,7 +27,6 @@ const routes = [
     }
 ]
 
-
 const router = createRouter({
     /**
      * createWebHashHistory
@@ -45,6 +43,5 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 })
-
 
 export default router;

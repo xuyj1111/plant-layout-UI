@@ -19,6 +19,7 @@ export default {
         Operation
     },
     methods: {
+        // 菜单栏的按钮，切换地图数据
         onButtonEvent() {
             const disMap = this.$refs.disMapChild;
             disMap.setPlantData();

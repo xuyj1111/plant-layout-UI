@@ -54,16 +54,16 @@
                     <el-input v-model="formLabel.stationNum" />
                 </el-form-item>
                 <el-form-item label="坐标X">
-                    <el-input v-model="formLabel.stationNum" />
+                    <el-input v-model="formLabel.coordX" />
                 </el-form-item>
                 <el-form-item label="坐标Y">
-                    <el-input v-model="formLabel.stationNum" />
+                    <el-input v-model="formLabel.coordY" />
                 </el-form-item>
                 <el-form-item label="宽度">
-                    <el-input v-model="formLabel.stationNum" />
+                    <el-input v-model="formLabel.width" />
                 </el-form-item>
                 <el-form-item label="高度">
-                    <el-input v-model="formLabel.stationNum" />
+                    <el-input v-model="formLabel.height" />
                 </el-form-item>
                 <el-form-item label="传送带" prop="conveyor">
                     <el-radio-group v-model="formLabel.conveyor">
@@ -77,7 +77,6 @@
                 </el-form-item>
             </el-form>
         </div>
-
 
         <div id="map-button">
             <button @click="bigger()">+</button>
@@ -103,11 +102,24 @@ export default {
     },
     data() {
         return {
+            // 搜索框输入
             search_input: "",
+            // 切换是否可编辑
             switch_value: false,
             formLabel: {
+                // 设备编号
                 deviceNum: "",
+                // 岗位号
                 stationNum: "",
+                // 坐标X
+                coordX: "",
+                // 坐标Y
+                coordY: "",
+                // 宽度
+                width: "",
+                // 高度
+                height: "",
+                // 是否传送带
                 conveyor: ""
             }
         }
@@ -116,6 +128,7 @@ export default {
         ...mapState(['map'])
     },
     methods: {
+        // 放大地图
         bigger() {
             if (this.map.per < 100) {
                 this.map.width += 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
@@ -123,6 +136,7 @@ export default {
                 this.map.per += 10;
             }
         },
+        // 缩小地图
         smaller() {
             if (this.map.per > 0) {
                 this.map.width -= 10 * ((this.map.maxWidth - this.map.minWidth) / 100);

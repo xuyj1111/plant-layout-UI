@@ -19,7 +19,7 @@ export default {
     mounted() {
         var that = this;
         window.addEventListener('load', this.init);
-        // 地图中的点击事件
+        // 地图中的点击事件，以选中设备
         this.$refs.mapDom.addEventListener('click', function (e) {
             that.draw({ x: e.offsetX, y: e.offsetY });
         }, false);
@@ -31,36 +31,33 @@ export default {
         init() {
             this.setPlantData();
         },
-        draw(p) {
-            console.log(p.x);
-            console.log(p.y);
-        },
+        // 获取地图数据，即赋值给 this.shapes
         setPlantData() {
             const that = this;
-            // 请求获取地图数据
             this.$axiosInstance.get("/plant", {
                 params: {
                     name: this.$store.state.plant
                 }
             }).then(function (response) {
-                try {
-                    var jsonObj = response.data;
-                    that.shapes = [];
-                    for (var i = 0; i < jsonObj.length; i++) {
-                        // if (!importValidation(jsonObj[i], i + 1)) {
-                        //     return;
-                        // }
-                        that.shapes[i] = jsonObj[i];
-                    }
-                } catch (e) {
-                    window.alert(e);
-                } finally {
-                    console.log(that.shapes);
+                var jsonObj = response.data;
+                that.shapes = [];
+                for (var i = 0; i < jsonObj.length; i++) {
+                    // 校验json，不抛出错误
+                    // if (!importValidation(jsonObj[i], i + 1)) {
+                    //     return;
+                    // }
+                    that.shapes[i] = jsonObj[i];
                 }
+                console.log('地图切换成功');
             }).catch(function (error) {
                 console.log(error);
+                window.alert("切换地图失败！请检查！");
                 return false;
             })
+        },
+        draw(p) {
+            console.log(p.x);
+            console.log(p.y);
         }
     }
 }
