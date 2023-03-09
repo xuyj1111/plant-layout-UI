@@ -77,6 +77,7 @@ export default {
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
                 this.$store.state.plant = e.target.id;
+                this.$emit('onButtonEvent', e.target.id);
             }
         }
     }

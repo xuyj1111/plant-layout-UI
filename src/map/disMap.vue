@@ -29,11 +29,38 @@ export default {
     },
     methods: {
         init() {
-            // 请求获取地图数据
+            this.setPlantData();
         },
         draw(p) {
             console.log(p.x);
             console.log(p.y);
+        },
+        setPlantData() {
+            const that = this;
+            // 请求获取地图数据
+            this.$axiosInstance.get("/plant", {
+                params: {
+                    name: this.$store.state.plant
+                }
+            }).then(function (response) {
+                try {
+                    var jsonObj = response.data;
+                    that.shapes = [];
+                    for (var i = 0; i < jsonObj.length; i++) {
+                        // if (!importValidation(jsonObj[i], i + 1)) {
+                        //     return;
+                        // }
+                        that.shapes[i] = jsonObj[i];
+                    }
+                } catch (e) {
+                    window.alert(e);
+                } finally {
+                    console.log(that.shapes);
+                }
+            }).catch(function (error) {
+                console.log(error);
+                return false;
+            })
         }
     }
 }
