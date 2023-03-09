@@ -2,25 +2,41 @@
     <section id="menu">
         <img class="logo" src="../assets/logo.png" onclick="" />
         <el-tooltip class="box-item" effect="dark" content="组装" placement="right">
-            <div id="assy" class="plant" @mouseover="execMouseover($event)"></div>
+            <div id="assy" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="(currentId == 'assy' || plant == 'assy') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="物流" placement="right">
-            <div id="logistics" class="plant" onclick=""></div>
+            <div id="logistics" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)"
+                :class="(currentId == 'logistics' || plant == 'logistics') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="外壳" placement="right">
-            <div id="case" class="plant" onclick=""></div>
+            <div id="case" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="(currentId == 'case' || plant == 'case') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="齿轮" placement="right">
-            <div id="gear" class="plant" onclick=""></div>
+            <div id="gear" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="(currentId == 'gear' || plant == 'gear') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="带轮" placement="right">
-            <div id="pulley" class="plant" onclick=""></div>
+            <div id="pulley" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="(currentId == 'pulley' || plant == 'pulley') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="差速器" placement="right">
-            <div id="differential" class="plant" onclick=""></div>
+            <div id="differential" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)"
+                :class="(currentId == 'differential' || plant == 'differential') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="热处理" placement="right">
-            <div id="heat" class="plant" onclick=""></div>
+            <div id="heat" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="(currentId == 'heat' || plant == 'heat') ? 'fixed' : 'notFixed'">
+            </div>
         </el-tooltip>
     </section>
 </template>
@@ -30,44 +46,29 @@ import { mapState } from 'vuex'
 
 export default {
     name: 'Menu',
-    computed: {
-        ...mapState(['plant'])
-    },
     data() {
         return {
-            notSelected: {
-                assy: 'url(../assets/assy.png)',
-                logistics: 'url(../assets/logistics.png)',
-                case: 'url(../assets/case.png)',
-                gear: 'url(../assets/gear.png)',
-                pulley: 'url(../assets/pulley.png)',
-                differential: 'url(../assets/differential.png)',
-                heat: 'url(../assets/heat.png)'
-            },
-            selected: {
-                assy: 'url(../assets/assyC.png)',
-                logistics: 'url(../assets/logisticsC.png)',
-                case: 'url(../assets/caseC.png)',
-                gear: 'url(../assets/gearC.png)',
-                pulley: 'url(../assets/pulleyC.png)',
-                differential: 'url(../assets/differentialC.png)',
-                heat: 'url(../assets/heatC.png)'
-            }
+            currentId: "assy",
         }
+    },
+    computed: {
+        ...mapState(['plant'])
     },
     mounted() {
         window.addEventListener('load', this.init);
     },
     methods: {
         init() {
-            const elements = document.getElementsByClassName('plant');
-            Array.from(elements).forEach((element) => {
-                console.log(this.notSelected[element.id] + ' no-repeat center center');
-                element.setAttribute('style', 'background: ' + this.notSelected[element.id] + ' no-repeat center center;')
-            })
         },
-        execMouseover(e) {
-            console.log(e);
+        handleMouseEnter(e) {
+            this.currentId = e.target.id;
+        },
+        handleMouseLeave(e) {
+            this.currentId = this.$store.state.plant;
+        },
+        handleClick(e) {
+            // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
+            this.$store.state.plant = e.target.id;
         }
     }
 }
@@ -84,67 +85,67 @@ export default {
 }
 
 /* 菜单栏中的选项 */
-#menu .plant {
+#menu div {
     height: 30px;
     widows: 30px;
     margin: 20px 10px;
     flex-direction: column;
 }
 
-/* #assy {
+#assy.fixed {
     background: url(../assets/assy.png) no-repeat center center;
 }
 
-#assy:hover {
+#assy.notFixed {
     background: url(../assets/assyC.png) no-repeat center center;
-} 
+}
 
-#logistics {
+#logistics.fixed {
     background: url(../assets/logistics.png) no-repeat center center;
 }
 
-#logistics:hover {
+#logistics.notFixed {
     background: url(../assets/logisticsC.png) no-repeat center center;
 }
 
-#case {
+#case.fixed {
     background: url(../assets/case.png) no-repeat center center;
 }
 
-#case:hover {
+#case.notFixed {
     background: url(../assets/caseC.png) no-repeat center center;
 }
 
-#gear {
+#gear.fixed {
     background: url(../assets/gear.png) no-repeat center center;
 }
 
-#gear:hover {
+#gear.notFixed {
     background: url(../assets/gearC.png) no-repeat center center;
 }
 
-#pulley {
+#pulley.fixed {
     background: url(../assets/pulley.png) no-repeat center center;
 }
 
-#pulley:hover {
+#pulley.notFixed {
     background: url(../assets/pulleyC.png) no-repeat center center;
 }
 
-#differential {
+#differential.fixed {
     background: url(../assets/differential.png) no-repeat center center;
 }
 
-#differential:hover {
+#differential.notFixed {
     background: url(../assets/differentialC.png) no-repeat center center;
 }
 
-#heat {
+#heat.fixed {
     background: url(../assets/heat.png) no-repeat center center;
 }
 
-#heat:hover {
+#heat.notFixed {
     background: url(../assets/heatC.png) no-repeat center center;
-} */
+}
 </style>
   

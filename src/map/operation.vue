@@ -27,26 +27,26 @@
             <el-descriptions title="问题点" :column="1" border>
                 <el-descriptions-item label="总数" label-align="right" align="center" width="100px">10</el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
-                    <font color="red">3</font>
+                    <!-- <font color="red">3</font>
                     <font> / </font>
-                    <font color="green">1</font>
+                    <font color="green">1</font> -->
                 </el-descriptions-item>
                 <el-descriptions-item label="无需协助" label-align="right" align="center" width="100px">
-                    <font color="red">3</font>
+                    <!-- <font color="red">3</font>
                     <font> / </font>
-                    <font color="green">3</font>
+                    <font color="green">3</font> -->
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
                     <el-tag size="small">60%</el-tag>
                 </el-descriptions-item>
             </el-descriptions>
 
-            <el-link :underline="false" type="primary" id="link">问题点详情>></el-link>
+            <el-link :underline="false" type="primary" id="link">问题点详情</el-link>
         </div>
 
         <!-- 可编辑信息区域 -->
         <div id="edit_info" v-show="switch_value">
-            <el-form :label-position="right" label-width="70px" :model="formLabel">
+            <el-form label-width="70px" :model="formLabel">
                 <el-form-item label="设备编号">
                     <el-input v-model="formLabel.deviceNum" />
                 </el-form-item>
@@ -72,7 +72,7 @@
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSubmit">保存</el-button>
+                    <el-button type="primary" @click="">保存</el-button>
                     <el-button type="danger">删除</el-button>
                 </el-form-item>
             </el-form>
