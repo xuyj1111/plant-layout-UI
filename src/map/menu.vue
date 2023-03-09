@@ -38,6 +38,11 @@
                 @click="handleClick($event)" :class="(currentId == 'heat' || plant == 'heat') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
+        <el-tooltip class="box-item" effect="dark" content="登出" placement="right">
+            <div id="logout" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+                @click="handleClick($event)" :class="currentId == 'logout' ? 'fixed' : 'notFixed'">
+            </div>
+        </el-tooltip>
     </section>
 </template>
 
@@ -67,8 +72,12 @@ export default {
             this.currentId = this.$store.state.plant;
         },
         handleClick(e) {
-            // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
-            this.$store.state.plant = e.target.id;
+            if (e.target.id == 'logout') {
+                this.$router.push('/logout');
+            } else {
+                // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
+                this.$store.state.plant = e.target.id;
+            }
         }
     }
 }
@@ -81,10 +90,11 @@ export default {
     height: 100%;
     width: 50px;
     /* 没有滚动条，显示不下就不显示 */
+    overflow-x: hidden;
     overflow-y: hidden;
 }
 
-/* 菜单栏中的选项 */
+/* 菜单栏的所有图标 */
 #menu div {
     height: 30px;
     widows: 30px;
@@ -92,60 +102,72 @@ export default {
     flex-direction: column;
 }
 
-#assy.fixed {
-    background: url(../assets/assy.png) no-repeat center center;
+#logout {
+    margin: 50px 10px;
 }
 
-#assy.notFixed {
+#assy.fixed {
     background: url(../assets/assyC.png) no-repeat center center;
 }
 
-#logistics.fixed {
-    background: url(../assets/logistics.png) no-repeat center center;
+#assy.notFixed {
+    background: url(../assets/assy.png) no-repeat center center;
 }
 
-#logistics.notFixed {
+#logistics.fixed {
     background: url(../assets/logisticsC.png) no-repeat center center;
 }
 
-#case.fixed {
-    background: url(../assets/case.png) no-repeat center center;
+#logistics.notFixed {
+    background: url(../assets/logistics.png) no-repeat center center;
 }
 
-#case.notFixed {
+#case.fixed {
     background: url(../assets/caseC.png) no-repeat center center;
 }
 
-#gear.fixed {
-    background: url(../assets/gear.png) no-repeat center center;
+#case.notFixed {
+    background: url(../assets/case.png) no-repeat center center;
 }
 
-#gear.notFixed {
+#gear.fixed {
     background: url(../assets/gearC.png) no-repeat center center;
 }
 
-#pulley.fixed {
-    background: url(../assets/pulley.png) no-repeat center center;
+#gear.notFixed {
+    background: url(../assets/gear.png) no-repeat center center;
 }
 
-#pulley.notFixed {
+#pulley.fixed {
     background: url(../assets/pulleyC.png) no-repeat center center;
 }
 
-#differential.fixed {
-    background: url(../assets/differential.png) no-repeat center center;
+#pulley.notFixed {
+    background: url(../assets/pulley.png) no-repeat center center;
 }
 
-#differential.notFixed {
+#differential.fixed {
     background: url(../assets/differentialC.png) no-repeat center center;
 }
 
+#differential.notFixed {
+    background: url(../assets/differential.png) no-repeat center center;
+}
+
 #heat.fixed {
-    background: url(../assets/heat.png) no-repeat center center;
+    background: url(../assets/heatC.png) no-repeat center center;
 }
 
 #heat.notFixed {
-    background: url(../assets/heatC.png) no-repeat center center;
+    background: url(../assets/heat.png) no-repeat center center;
+}
+
+#logout.fixed {
+    background: url(../assets/logoutC.png) no-repeat center center;
+}
+
+#logout.notFixed {
+    background: url(../assets/logout.png) no-repeat center center;
 }
 </style>
   
