@@ -69,7 +69,7 @@ export default {
                 (document.getElementById("messageBox").style.visibility = "hidden");
         }),
             (document.querySelector("#message").innerHTML +=
-                '<h1>😭&nbsp;&nbsp;抱歉，您访问页面找不到啦</h1><p>🏠您可以点击<a href="http://127.0.0.1:8080/">返回首页</a><br>或者<br>玩一会小恐龙快跑&nbsp;&nbsp;&nbsp;&nbsp;<br>按<span>空格(space)</span><span>上(↑)</span><span>下(↓)</span><span>左(←)</span><span>右(→)</span>键试试</p>');
+                '<h1>😭&nbsp;&nbsp;抱歉，您访问页面找不到啦</h1><p>🏠您可以点击<a href="http://127.0.0.1:8080/">返回首页</a><br>或者<br>玩一会小恐龙快跑&nbsp;&nbsp;&nbsp;&nbsp;<br>按<span>空格(space)、</span><span>上(↑)、</span><span>下(↓)</span>键试试</p>');
     }
 }
 </script>

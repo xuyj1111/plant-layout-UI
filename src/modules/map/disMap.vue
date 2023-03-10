@@ -13,7 +13,7 @@ export default {
     data() {
         return {
             // 地图中的图形
-            shapes: ""
+            shapes: new Map()
         }
     },
     mounted() {
@@ -40,24 +40,63 @@ export default {
                 }
             }).then(function (response) {
                 var jsonObj = response.data;
-                that.shapes = [];
+                that.shapes.clear();
                 for (var i = 0; i < jsonObj.length; i++) {
                     // 校验json，不抛出错误
-                    // if (!importValidation(jsonObj[i], i + 1)) {
-                    //     return;
-                    // }
-                    that.shapes[i] = jsonObj[i];
+                    if (that.batchValidation(jsonObj[i], i + 1)) {
+                        // 校验成功才赋值，校验失败跳过
+                        that.shapes.set(jsonObj[i]['deviceNum'] + jsonObj[i]['stationNum'], jsonObj[i]);
+                    }
                 }
-                console.log('地图切换成功');
+                console.log('地图切换完成');
             }).catch(function (error) {
                 console.log(error);
                 window.alert("切换地图失败！请检查！");
                 return false;
             })
         },
+        // 切换地图校验json
+        batchValidation(data, num) {
+            if (this.isEmpty(data["deviceNum"])) {
+                console.log("第" + num + "个设备编号为空！跳过");
+                return false;
+            } else if (this.shapes.has(data['deviceNum'] + data['stationNum'])) {
+                console.log("第" + num + "个设备编号+工作号已存在! deviceNum[" + data['deviceNum'] + "], stationNum[" + data['stationNum'] + "], 跳过");
+                return false;
+            } else if (this.isEmpty(data["coordX"])) {
+                console.log("第" + num + "个坐标x为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else if (this.isEmpty(data["coordY"])) {
+                console.log("第" + num + "个坐标y为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else if (this.isEmpty(data["width"])) {
+                console.log("第" + num + "个宽度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else if (this.isEmpty(data["height"])) {
+                console.log("第" + num + "个高度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else {
+                if (parseInt(data["coordX"]) + parseInt(data["width"]) > 580) {
+                    console.log("第" + num + "个坐标x加宽度不可超过580! deviceNum[" + data['deviceNum'] + "], 跳过");
+                    return false;
+                }
+                if (parseInt(data["coordY"]) + parseInt(data["height"]) > 380) {
+                    console.log("第" + num + "个坐标y加高度不可超过380! deviceNum[" + data['deviceNum'] + "], 跳过");
+                    return false;
+                }
+                return true;
+            }
+        },
         draw(p) {
             console.log(p.x);
             console.log(p.y);
+        },
+        // 判断字符串是否为空
+        isEmpty(str) {
+            if (str == null || str.trim() == "") {
+                return true;
+            }
+            return false;
         }
     }
 }
