@@ -21,22 +21,26 @@ const routes = [
         redirect: '/login'
     },
     {
-        path: '/:catchAll(.*)',
+        path: '/404',
         name: '404',
         component: NotFoundView
+    },
+    {
+        path: '/:catchAll(.*)',
+        redirect: '/404'
     }
 ]
 
 const router = createRouter({
     /**
      * createWebHashHistory
-     *      login: http://localhost:8080/#/
-     *      map: http://localhost:8080/#/map
+     *      login: http://localhost:8888/#/
+     *      map: http://localhost:8888/#/map
      * 原理：a标签锚点链接
      * 
      * createWebHistory
-     *      login: http://localhost:8080/
-     *      map: http://localhost:8080/map
+     *      login: http://localhost:8888/
+     *      map: http://localhost:8888/map
      * 此种方式，需要后台配合做重定向，否则会出现404
      * 原理：H5 pushState()
      */

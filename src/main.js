@@ -13,7 +13,7 @@ const app = createApp(App);
 app.config.globalProperties.$axios = axios;
 // 设置 axiosInstance 对象为全局变量
 app.config.globalProperties.$axiosInstance = axios.create({
-    baseURL: 'http://localhost:8082/api',
+    baseURL: 'http://localhost:8889/api',
     timeout: 3000,
     responseType: 'json',
     headers: {}
