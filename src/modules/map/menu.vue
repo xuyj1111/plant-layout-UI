@@ -60,7 +60,6 @@ export default {
         ...mapState(['plant'])
     },
     mounted() {
-        window.addEventListener('load', this.init);
     },
     methods: {
         init() {
@@ -79,8 +78,8 @@ export default {
                 this.$router.push('/logout');
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
-                this.$store.state.plant = e.target.id;
-                this.$emit('onButtonEvent', e.target.id);
+                this.$store.state.plant = e.target.id;                
+                this.$router.push('/map/' + e.target.id);
             }
         }
     }

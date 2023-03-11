@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import Vue from 'vue'
 import App from './App.vue'
 import axios from "axios"
 import ElementPlus from 'element-plus'
@@ -39,6 +40,8 @@ router.beforeEach((to, from, next) => {
         if (isLogin != null) {
             next({ path: '/map' });
         }
+    } else if(to.path == '/map') {
+        next({ path: '/map/' + store.state.plant });
     } else if (!to.path.startsWith('/api') && isLogin == null) {
         next({ path: '/login' });
     }

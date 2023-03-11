@@ -18,11 +18,10 @@ export default {
     },
     mounted() {
         var that = this;
-        window.addEventListener('load', this.init);
         // 地图中的点击事件，以选中设备
-        this.$refs.mapDom.addEventListener('click', function (e) {
-            that.draw({ x: e.offsetX, y: e.offsetY });
-        }, false);
+        // this.$refs.mapDom.addEventListener('click', function (e) {
+        //     that.draw({ x: e.offsetX, y: e.offsetY });
+        // }, false);
     },
     computed: {
         ...mapState(['map'])
@@ -48,7 +47,8 @@ export default {
                         that.shapes.set(jsonObj[i]['deviceNum'] + jsonObj[i]['stationNum'], jsonObj[i]);
                     }
                 }
-                console.log('地图切换完成');
+                console.log('地图切换完成, 共' + that.shapes.size + '个设备');
+                that.draw();
             }).catch(function (error) {
                 console.log(error);
                 window.alert("切换地图失败！请检查！");
@@ -87,9 +87,61 @@ export default {
                 return true;
             }
         },
-        draw(p) {
-            console.log(p.x);
-            console.log(p.y);
+        // 画地图
+        draw() {
+            const mapContext = this.$refs['mapDom'].getContext("2d");
+
+            mapContext.clearRect(0, 0, this.map.width, this.map.height);
+            mapContext.strokeStyle = "black";
+            // thumbnailContext.strokeStyle = "black";
+            // 地图放大，设备也同样放大
+            const multiple = (1.0 + 0.05 * this.map.per);
+
+            this.shapes.forEach((value, key) => {
+                mapContext.beginPath();
+                mapContext.rect(
+                    value["coordX"] * multiple,
+                    value["coordY"] * multiple,
+                    value["width"] * multiple,
+                    value["height"] * multiple
+                );
+                mapContext.stroke();
+            });
+
+
+            // for (var i = 0; i < this.shapes.size; i++) {
+            //     mapContext.beginPath();
+            //     // thumbnailContext.beginPath();
+            //     mapContext.rect(
+            //         shapes[i]["coordX"] * multiple,
+            //         shapes[i]["coordY"] * multiple,
+            //         shapes[i]["width"] * multiple,
+            //         shapes[i]["height"] * multiple
+            //     );
+            // thumbnailContext.rect(
+            //     shapes[i]["coordX"] * 0.35,
+            //     shapes[i]["coordY"] * 0.35,
+            //     shapes[i]["width"] * 0.35,
+            //     shapes[i]["height"] * 0.35
+            // );
+            // if (i == choose) {
+            //     mapContext.fillStyle = "black";
+            //     mapContext.fill();
+            //     thumbnailContext.fillStyle = "black";
+            //     thumbnailContext.fill();
+            // } else {
+            //     //传送带
+            //     if (shapes[i]["conveyor"] == "true") {
+
+            //         mapContext.fillStyle = "#a8a6a5";
+            //         mapContext.fill();
+            //         thumbnailContext.fillStyle = "#a8a6a5";
+            //         thumbnailContext.fill();
+            //     }
+            //     mapContext.stroke();
+            //     thumbnailContext.stroke();
+            // }
+            // }
         },
         // 判断字符串是否为空
         isEmpty(str) {

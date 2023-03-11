@@ -13,6 +13,10 @@ const routes = [
     },
     {
         path: '/map',
+        component: MapView
+    },
+    {
+        path: '/map/:plant',
         name: 'map',
         component: MapView
     },
