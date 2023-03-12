@@ -1,6 +1,6 @@
 <template>
     <!-- 显示地图 -->
-    <section id="main">
+    <section ref="section" id="main">
         <canvas ref="mapDom" :width="map.width" :height="map.height"> </canvas>
     </section>
 </template>

@@ -54,6 +54,17 @@ export default {
             const disMap = this.$refs.disMapChild;
             menu.handleMouseLeave();
             disMap.init();
+
+
+            // 地图的实际width、height，当然代码中肯定用全局变量width、height
+            console.log('clientWidth: ', disMap.$refs['mapDom'].clientWidth);
+            console.log('clientHeight: ', disMap.$refs['mapDom'].clientHeight);
+            // 地图显示区域的width、height
+            console.log('clientWidth: ', disMap.$refs['section'].clientWidth);
+            console.log('clientHeight: ', disMap.$refs['section'].clientHeight);
+            // 滚动条之后的偏移量
+            console.log('scrollTop: ', disMap.$refs['section'].scrollTop);
+            console.log('scrollLeft: ', disMap.$refs['section'].scrollLeft);
         },
         // 画地图
         draw() {
