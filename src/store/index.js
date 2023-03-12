@@ -14,6 +14,10 @@ export default createStore({
             minHeight: 380,
             // 画布比例，10%
             per: 10
-        }
+        },
+        // 地图中的图形
+        shapes: new Map(),
+        // 选中的设备（设备号+工作号），未选中为空字符串
+        choose: ''
     }
 })

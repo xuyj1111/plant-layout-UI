@@ -12,10 +12,10 @@ export default {
     name: 'DisMap',
     data() {
         return {
-            // 地图中的图形
-            shapes: new Map(),
-            // 选中的设备（设备号+工作号），未选中为空字符串
-            choose: ''
+            // // 地图中的图形
+            // shapes: new Map(),
+            // // 选中的设备（设备号+工作号），未选中为空字符串
+            // choose: ''
         }
     },
     mounted() {
@@ -25,13 +25,14 @@ export default {
             that.setChoose({ x: e.offsetX, y: e.offsetY });
         });
         // 监听choose变量
-        this.$watch("choose", (newVal, oldVal) => {
-            if(newVal == '') {
+        this.$watch("$store.state.choose", (newVal, oldVal) => {
+            if (newVal == '') {
                 console.log('取消选中');
             } else {
                 console.log('选中的设备值+工位号: ' + newVal);
             }
-            this.draw();
+            // 触发父vue执行方法
+            this.$emit('onDraw');
         });
     },
     computed: {
@@ -46,7 +47,7 @@ export default {
             const mapContext = this.$refs['mapDom'].getContext("2d");
             const multiple = (1.0 + 0.05 * this.map.per);
             // 用foreach，无法使用break或return跳出循环，因此使用for
-            for (let [key, value] of this.shapes) {
+            for (let [key, value] of this.$store.state.shapes) {
                 mapContext.beginPath();
                 mapContext.rect(
                     value["coordX"] * multiple,
@@ -55,32 +56,34 @@ export default {
                     value["height"] * multiple
                 );
                 if (mapContext.isPointInPath(p.x, p.y)) {
-                    this.choose = key;
+                    this.$store.state.choose = key;
                     break;
                 } else {
-                    this.choose = '';
+                    this.$store.state.choose = '';
                 }
             };
         },
-        // 获取地图数据，即赋值给 this.shapes
+        // 获取地图数据，即赋值给 this.$store.state.shapes
         setPlantData() {
             const that = this;
+            const shapes = this.$store.state.shapes;
             this.$axiosInstance.get("/plant", {
                 params: {
                     name: this.$store.state.plant
                 }
             }).then(function (response) {
                 var jsonObj = response.data;
-                that.shapes.clear();
+                shapes.clear();
                 for (var i = 0; i < jsonObj.length; i++) {
                     // 校验json，不抛出错误
                     if (that.batchValidation(jsonObj[i], i + 1)) {
                         // 校验成功才赋值，校验失败跳过
-                        that.shapes.set(jsonObj[i]['deviceNum'] + '+' + jsonObj[i]['stationNum'], jsonObj[i]);
+                        shapes.set(jsonObj[i]['deviceNum'] + '+' + jsonObj[i]['stationNum'], jsonObj[i]);
                     }
                 }
-                console.log('地图切换完成, 共' + that.shapes.size + '个设备');
-                that.draw();
+                console.log('地图切换完成, 共' + shapes.size + '个设备');
+                // 触发父vue执行方法
+                that.$emit('onDraw');
             }).catch(function (error) {
                 console.log(error);
                 window.alert("切换地图失败！请检查！");
@@ -92,7 +95,7 @@ export default {
             if (this.isEmpty(data["deviceNum"])) {
                 console.log("第" + num + "个设备编号为空！跳过");
                 return false;
-            } else if (this.shapes.has(data['deviceNum'] + data['stationNum'])) {
+            } else if (this.$store.state.shapes.has(data['deviceNum'] + data['stationNum'])) {
                 console.log("第" + num + "个设备编号+工作号已存在! deviceNum[" + data['deviceNum'] + "], stationNum[" + data['stationNum'] + "], 跳过");
                 return false;
             } else if (this.isEmpty(data["coordX"])) {
@@ -118,74 +121,6 @@ export default {
                 }
                 return true;
             }
-        },
-        // 画地图
-        draw() {
-            const mapContext = this.$refs['mapDom'].getContext("2d");
-
-            mapContext.clearRect(0, 0, this.map.width, this.map.height);
-            mapContext.strokeStyle = "black";
-            // thumbnailContext.strokeStyle = "black";
-            // 地图放大，设备也同样放大
-            const multiple = (1.0 + 0.05 * this.map.per);
-
-            this.shapes.forEach((value, key) => {
-                mapContext.beginPath();
-                mapContext.rect(
-                    value["coordX"] * multiple,
-                    value["coordY"] * multiple,
-                    value["width"] * multiple,
-                    value["height"] * multiple
-                );
-                if (key == this.choose) {
-                    // 选中设备
-                    mapContext.fillStyle = "black";
-                    mapContext.fill();
-                } else {
-                    //传送带
-                    if (value["conveyor"] == "true") {
-                        mapContext.fillStyle = "#a8a6a5";
-                        mapContext.fill();
-                    }
-                    // 其他设备
-                    mapContext.stroke();
-                }
-            });
-
-
-            // for (var i = 0; i < this.shapes.size; i++) {
-            //     mapContext.beginPath();
-            //     // thumbnailContext.beginPath();
-            //     mapContext.rect(
-            //         shapes[i]["coordX"] * multiple,
-            //         shapes[i]["coordY"] * multiple,
-            //         shapes[i]["width"] * multiple,
-            //         shapes[i]["height"] * multiple
-            //     );
-            // thumbnailContext.rect(
-            //     shapes[i]["coordX"] * 0.35,
-            //     shapes[i]["coordY"] * 0.35,
-            //     shapes[i]["width"] * 0.35,
-            //     shapes[i]["height"] * 0.35
-            // );
-            // if (i == choose) {
-            //     mapContext.fillStyle = "black";
-            //     mapContext.fill();
-            //     thumbnailContext.fillStyle = "black";
-            //     thumbnailContext.fill();
-            // } else {
-            //     //传送带
-            //     if (shapes[i]["conveyor"] == "true") {
-
-            //         mapContext.fillStyle = "#a8a6a5";
-            //         mapContext.fill();
-            //         thumbnailContext.fillStyle = "#a8a6a5";
-            //         thumbnailContext.fill();
-            //     }
-            //     mapContext.stroke();
-            //     thumbnailContext.stroke();
-            // }
-            // }
         },
         // 判断字符串是否为空
         isEmpty(str) {
