@@ -13,15 +13,26 @@ export default {
     data() {
         return {
             // 地图中的图形
-            shapes: new Map()
+            shapes: new Map(),
+            // 选中的设备（设备号+工作号），未选中为空字符串
+            choose: ''
         }
     },
     mounted() {
         var that = this;
         // 地图中的点击事件，以选中设备
-        // this.$refs.mapDom.addEventListener('click', function (e) {
-        //     that.draw({ x: e.offsetX, y: e.offsetY });
-        // }, false);
+        this.$refs.mapDom.addEventListener('click', function (e) {
+            that.setChoose({ x: e.offsetX, y: e.offsetY });
+        });
+        // 监听choose变量
+        this.$watch("choose", (newVal, oldVal) => {
+            if(newVal == '') {
+                console.log('取消选中');
+            } else {
+                console.log('选中的设备值+工位号: ' + newVal);
+            }
+            this.draw();
+        });
     },
     computed: {
         ...mapState(['map'])
@@ -29,6 +40,27 @@ export default {
     methods: {
         init() {
             this.setPlantData();
+        },
+        // 赋值给choose，表示选中设备
+        setChoose(p) {
+            const mapContext = this.$refs['mapDom'].getContext("2d");
+            const multiple = (1.0 + 0.05 * this.map.per);
+            // 用foreach，无法使用break或return跳出循环，因此使用for
+            for (let [key, value] of this.shapes) {
+                mapContext.beginPath();
+                mapContext.rect(
+                    value["coordX"] * multiple,
+                    value["coordY"] * multiple,
+                    value["width"] * multiple,
+                    value["height"] * multiple
+                );
+                if (mapContext.isPointInPath(p.x, p.y)) {
+                    this.choose = key;
+                    break;
+                } else {
+                    this.choose = '';
+                }
+            };
         },
         // 获取地图数据，即赋值给 this.shapes
         setPlantData() {
@@ -44,7 +76,7 @@ export default {
                     // 校验json，不抛出错误
                     if (that.batchValidation(jsonObj[i], i + 1)) {
                         // 校验成功才赋值，校验失败跳过
-                        that.shapes.set(jsonObj[i]['deviceNum'] + jsonObj[i]['stationNum'], jsonObj[i]);
+                        that.shapes.set(jsonObj[i]['deviceNum'] + '+' + jsonObj[i]['stationNum'], jsonObj[i]);
                     }
                 }
                 console.log('地图切换完成, 共' + that.shapes.size + '个设备');
@@ -105,7 +137,19 @@ export default {
                     value["width"] * multiple,
                     value["height"] * multiple
                 );
-                mapContext.stroke();
+                if (key == this.choose) {
+                    // 选中设备
+                    mapContext.fillStyle = "black";
+                    mapContext.fill();
+                } else {
+                    //传送带
+                    if (value["conveyor"] == "true") {
+                        mapContext.fillStyle = "#a8a6a5";
+                        mapContext.fill();
+                    }
+                    // 其他设备
+                    mapContext.stroke();
+                }
             });
 
 

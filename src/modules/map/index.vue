@@ -10,7 +10,6 @@
 import Menu from './menu.vue';
 import DisMap from './disMap.vue';
 import Operation from './operation.vue';
-import { init } from 'events';
 
 const plants = new Set(['assy', 'logistics', 'case', 'gear', 'pulley', 'differential', 'heat']);
 
@@ -48,7 +47,7 @@ export default {
             const disMap = this.$refs.disMapChild;
             menu.handleMouseLeave();
             disMap.init();
-            
+            disMap.choose = '';
         }
     }
 }
