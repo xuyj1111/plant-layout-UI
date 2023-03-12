@@ -1,9 +1,9 @@
 <template>
     <body>
         <Menu ref="menuChild" />
-        <DisMap ref="disMapChild" @onDraw="draw"/>
+        <DisMap ref="disMapChild" @onDraw="draw" />
         <!-- 方法缩小，都需要加载一遍地图 -->
-        <Operation @onBiggerOrSmaller="init" />
+        <Operation ref="operationChild" @onBiggerOrSmaller="init" />
     </body>
 </template>
 
@@ -23,7 +23,7 @@ export default {
         Operation
     },
     computed: {
-        ...mapState(['map'])
+        ...mapState(['map', 'thumbnail'])
     },
     mounted() {
         const suffix = this.$route.path.substring('/map/'.length);
@@ -58,33 +58,47 @@ export default {
         // 画地图
         draw() {
             const mapContext = this.$refs.disMapChild.$refs['mapDom'].getContext("2d");
+            const thumbnailContext = this.$refs.operationChild.$refs['mapDom'].getContext("2d");
 
             mapContext.clearRect(0, 0, this.map.width, this.map.height);
+            thumbnailContext.clearRect(0, 0, this.thumbnail.width, this.thumbnail.height);
             mapContext.strokeStyle = "black";
-            // thumbnailContext.strokeStyle = "black";
+            thumbnailContext.strokeStyle = "black";
             // 地图放大，设备也同样放大
             const multiple = (1.0 + 0.05 * this.map.per);
 
             this.$store.state.shapes.forEach((value, key) => {
                 mapContext.beginPath();
+                thumbnailContext.beginPath();
                 mapContext.rect(
                     value["coordX"] * multiple,
                     value["coordY"] * multiple,
                     value["width"] * multiple,
                     value["height"] * multiple
                 );
+                thumbnailContext.rect(
+                    value["coordX"] * 0.35,
+                    value["coordY"] * 0.35,
+                    value["width"] * 0.35,
+                    value["height"] * 0.35
+                );
                 if (key == this.$store.state.choose) {
                     // 选中设备
-                    mapContext.fillStyle = "black";
+                    mapContext.fillStyle = "red";
                     mapContext.fill();
+                    thumbnailContext.fillStyle = "red";
+                    thumbnailContext.fill();
                 } else {
                     //传送带
                     if (value["conveyor"] == "true") {
                         mapContext.fillStyle = "#a8a6a5";
                         mapContext.fill();
+                        thumbnailContext.fillStyle = "#a8a6a5";
+                        thumbnailContext.fill();
                     }
                     // 其他设备
                     mapContext.stroke();
+                    thumbnailContext.stroke();
                 }
             });
 

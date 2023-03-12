@@ -41,7 +41,7 @@
                 </el-descriptions-item>
             </el-descriptions>
 
-            <el-link :underline="false" type="primary" id="link">问题点详情</el-link>
+            <el-link :underline="false" type="primary" id="link">问题点详情>></el-link>
         </div>
 
         <!-- 可编辑信息区域 -->
@@ -86,7 +86,7 @@
         </div>
         <!-- 缩略图 -->
         <div id="canvas">
-            <canvas width="203" height="133"> </canvas>
+            <canvas ref="mapDom" width="203" height="133"> </canvas>
         </div>
     </section>
 </template>
