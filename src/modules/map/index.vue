@@ -1,8 +1,9 @@
 <template>
     <body>
-        <Menu ref="menuChild"/>
+        <Menu ref="menuChild" />
         <DisMap ref="disMapChild" />
-        <Operation />
+        <!-- 方法缩小，都需要加载一遍地图 -->
+        <Operation @onBiggerOrSmaller="init" />
     </body>
 </template>
 

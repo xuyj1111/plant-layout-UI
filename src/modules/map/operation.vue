@@ -134,6 +134,8 @@ export default {
                 this.map.width += 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
                 this.map.height += 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
                 this.map.per += 10;
+                // 触发父vue执行方法
+                this.$emit('onBiggerOrSmaller');
             }
         },
         // 缩小地图
@@ -142,6 +144,8 @@ export default {
                 this.map.width -= 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
                 this.map.height -= 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
                 this.map.per -= 10;
+                // 触发父vue执行方法
+                this.$emit('onBiggerOrSmaller');
             }
         }
     }
