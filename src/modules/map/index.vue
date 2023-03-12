@@ -1,6 +1,6 @@
 <template>
     <body>
-        <Menu />
+        <Menu ref="menuChild"/>
         <DisMap ref="disMapChild" />
         <Operation />
     </body>
@@ -22,18 +22,22 @@ export default {
         Operation
     },
     mounted() {
+        const suffix = this.$route.path.substring('/map/'.length);
         // 后缀名不是厂房后缀名，跳转到404
-        if (!plants.has(this.$route.path.substring('/map/'.length))) {
+        if (!plants.has(suffix)) {
             this.$router.push('/404');
         } else {
+            this.$store.state.plant = suffix;
             this.init();
         }
     },
     beforeRouteUpdate(to, from, next) {
+        const suffix = this.$route.path.substring('/map/'.length);
         // 后缀名不是厂房后缀名，跳转到404
-        if (!plants.has(this.$route.path.substring('/map/'.length))) {
+        if (!plants.has(suffix)) {
             this.$router.push('/404');
         } else {
+            this.$store.state.plant = suffix;
             this.init();
         }
         next();
@@ -41,7 +45,9 @@ export default {
     methods: {
         // 进入该页面的初始化
         init() {
+            const menu = this.$refs.menuChild;
             const disMap = this.$refs.disMapChild;
+            menu.handleMouseLeave();
             disMap.init();
         }
     }

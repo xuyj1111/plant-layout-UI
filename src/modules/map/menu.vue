@@ -2,44 +2,44 @@
     <section id="menu">
         <img class="logo" src="../../assets/logo.png" onclick="" />
         <el-tooltip class="box-item" effect="dark" content="组装" placement="right">
-            <div id="assy" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="assy" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="(currentId == 'assy' || plant == 'assy') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="物流" placement="right">
-            <div id="logistics" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="logistics" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)"
                 :class="(currentId == 'logistics' || plant == 'logistics') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="外壳" placement="right">
-            <div id="case" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="case" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="(currentId == 'case' || plant == 'case') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="齿轮" placement="right">
-            <div id="gear" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="gear" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="(currentId == 'gear' || plant == 'gear') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="带轮" placement="right">
-            <div id="pulley" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="pulley" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="(currentId == 'pulley' || plant == 'pulley') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="差速器" placement="right">
-            <div id="differential" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="differential" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)"
                 :class="(currentId == 'differential' || plant == 'differential') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="热处理" placement="right">
-            <div id="heat" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="heat" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="(currentId == 'heat' || plant == 'heat') ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
         <el-tooltip class="box-item" effect="dark" content="登出" placement="right">
-            <div id="logout" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)"
+            <div id="logout" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
                 @click="handleClick($event)" :class="currentId == 'logout' ? 'fixed' : 'notFixed'">
             </div>
         </el-tooltip>
@@ -69,7 +69,7 @@ export default {
             this.currentId = e.target.id;
         },
         // 鼠标移出
-        handleMouseLeave(e) {
+        handleMouseLeave() {
             this.currentId = this.$store.state.plant;
         },
         // 鼠标点击
@@ -78,7 +78,7 @@ export default {
                 this.$router.push('/logout');
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
-                this.$store.state.plant = e.target.id;                
+                this.$store.state.plant = e.target.id;
                 this.$router.push('/map/' + e.target.id);
             }
         }
