@@ -37,7 +37,6 @@ export default {
         if (!plants.has(suffix)) {
             this.$router.push('/404');
         } else {
-            this.$store.state.plant = suffix;
             this.init();
         }
         next();
@@ -49,6 +48,7 @@ export default {
             const disMap = this.$refs.disMapChild;
             menu.handleMouseLeave();
             disMap.init();
+            
         }
     }
 }
