@@ -35,6 +35,15 @@ export default {
             this.init();
             this.$store.state.choose = '';
         }
+
+        // 监听滚动条
+        const disMap = this.$refs.disMapChild;
+        disMap.$refs['section'].addEventListener(
+            "scroll",
+            this.throttle(() => {
+                this.draw();
+            }, 200)
+        );
     },
     beforeRouteUpdate(to, from, next) {
         const suffix = this.$route.path.substring('/map/'.length);
@@ -112,41 +121,42 @@ export default {
                     thumbnailContext.stroke();
                 }
             });
+            this.drawThumbnailCheck();
+        },
+        // 画缩略图中选中边框
+        drawThumbnailCheck() {
+            const thumbnailContext = this.$refs.operationChild.$refs['mapDom'].getContext("2d");
+            const disMap = this.$refs.disMapChild;
 
+            // 计算显示区域和实际区域的百分比
+            const widthPer = disMap.$refs['section'].clientWidth / this.map.width;
+            const heightPer = disMap.$refs['section'].clientHeight / this.map.height;
+            // 计算滚动值和实际区域的百分比
+            const offsetX = disMap.$refs['section'].scrollLeft / this.map.width;
+            const offsetY = disMap.$refs['section'].scrollTop / this.map.height;
 
-            // for (var i = 0; i < this.shapes.size; i++) {
-            //     mapContext.beginPath();
-            //     // thumbnailContext.beginPath();
-            //     mapContext.rect(
-            //         shapes[i]["coordX"] * multiple,
-            //         shapes[i]["coordY"] * multiple,
-            //         shapes[i]["width"] * multiple,
-            //         shapes[i]["height"] * multiple
-            //     );
-            // thumbnailContext.rect(
-            //     shapes[i]["coordX"] * 0.35,
-            //     shapes[i]["coordY"] * 0.35,
-            //     shapes[i]["width"] * 0.35,
-            //     shapes[i]["height"] * 0.35
-            // );
-            // if (i == choose) {
-            //     mapContext.fillStyle = "black";
-            //     mapContext.fill();
-            //     thumbnailContext.fillStyle = "black";
-            //     thumbnailContext.fill();
-            // } else {
-            //     //传送带
-            //     if (shapes[i]["conveyor"] == "true") {
-
-            //         mapContext.fillStyle = "#a8a6a5";
-            //         mapContext.fill();
-            //         thumbnailContext.fillStyle = "#a8a6a5";
-            //         thumbnailContext.fill();
-            //     }
-            //     mapContext.stroke();
-            //     thumbnailContext.stroke();
-            // }
-            // }
+            thumbnailContext.strokeStyle = "blue";
+            thumbnailContext.beginPath();
+            thumbnailContext.lineWidth = 2;
+            thumbnailContext.rect(
+                this.thumbnail.width * offsetX,
+                this.thumbnail.height * offsetY,
+                this.thumbnail.width * ((widthPer > 1) ? 1 : widthPer),
+                this.thumbnail.height * ((heightPer > 1) ? 1 : heightPer)
+            );
+            thumbnailContext.stroke();
+            thumbnailContext.lineWidth = 1;
+        },
+        throttle(fn, delay) {
+            let timer = null;
+            return function () {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    fn.apply(context, args);
+                }, delay);
+            };
         }
     }
 }

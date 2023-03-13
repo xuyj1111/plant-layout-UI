@@ -85,9 +85,7 @@
             <span>&nbsp;&nbsp;{{ map.per }}%</span>
         </div>
         <!-- 缩略图 -->
-        <div id="canvas">
-            <canvas ref="mapDom" width="203" height="133"> </canvas>
-        </div>
+        <canvas id='canvas' ref="mapDom" width="203" height="133"> </canvas>
     </section>
 </template>
 
@@ -208,6 +206,6 @@ export default {
 #canvas {
     margin: 0 auto;
     background-color: white;
-    border: 1px solid rgb(0, 0, 0);
+    border: 1px solid black;
 }
 </style>
