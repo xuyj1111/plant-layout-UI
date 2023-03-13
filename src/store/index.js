@@ -13,7 +13,10 @@ export default createStore({
             minWidth: 580,
             minHeight: 380,
             // 地图比例，10%
-            per: 10
+            per: 10,
+            // 滚动条的偏移量
+            scrollLeft: 0,
+            scrollTop: 0
         },
         // 地图中的图形
         shapes: new Map(),

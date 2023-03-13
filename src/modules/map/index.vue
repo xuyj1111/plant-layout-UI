@@ -3,7 +3,7 @@
         <Menu ref="menuChild" />
         <DisMap ref="disMapChild" @onDraw="draw" />
         <!-- 方法缩小，都需要加载一遍地图 -->
-        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging" />
+        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging" @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" />
     </body>
 </template>
 
@@ -42,6 +42,8 @@ export default {
             "scroll",
             this.throttle(() => {
                 this.draw();
+                this.setScrollTopAndScrollLeft();
+                console.log('滚动条拖动结束')
             }, 200)
         );
     },
@@ -63,17 +65,7 @@ export default {
             const disMap = this.$refs.disMapChild;
             menu.handleMouseLeave();
             disMap.init();
-
-
-            // 地图的实际width、height，当然代码中肯定用全局变量width、height
-            console.log('clientWidth: ', disMap.$refs['mapDom'].clientWidth);
-            console.log('clientHeight: ', disMap.$refs['mapDom'].clientHeight);
-            // 地图显示区域的width、height
-            console.log('clientWidth: ', disMap.$refs['section'].clientWidth);
-            console.log('clientHeight: ', disMap.$refs['section'].clientHeight);
-            // 滚动条之后的偏移量
-            console.log('scrollTop: ', disMap.$refs['section'].scrollTop);
-            console.log('scrollLeft: ', disMap.$refs['section'].scrollLeft);
+            this.setScrollTopAndScrollLeft();
         },
         // 画地图
         draw() {
@@ -153,11 +145,15 @@ export default {
             thumbnailContext.lineWidth = 1;
         },
         // 拖动缩略图选中框后执行
-        draging(offsetX, offsetY) {
-            const sectionOffsetX = (offsetX / this.thumbnail.width) * this.map.width;
-            const sectionOffsetY = (offsetY / this.thumbnail.height) * this.map.height;
-            this.$refs['disMapChild'].$refs['section'].scrollTo(sectionOffsetX, sectionOffsetY);
+        draging(scrollLeft, scrollTop) {
+            this.$refs['disMapChild'].$refs['section'].scrollTo(scrollLeft, scrollTop);
             this.draw();
+        },
+        // 滚动条偏移量赋值
+        setScrollTopAndScrollLeft() {
+            const dom = this.$refs['disMapChild'].$refs['section'];
+            this.map.scrollLeft = dom.scrollLeft;
+            this.map.scrollTop = dom.scrollTop;
         },
         throttle(fn, delay) {
             let timer = null;

@@ -168,10 +168,14 @@ export default {
         stopDraging() {
             this.rectLeft = 0;
             this.rectTop = 0;
+            this.firstClickX = 0;
+            this.firstClickY = 0;
+            this.$emit('setScrollTopAndScrollLeft');
             console.log('over drag');
         },
         // 拖动的具体实现
         draging(event) {
+            // 只有鼠标按下才不为0，松开为0，即鼠标按下拖动即进入
             if (this.rectLeft > 0 && this.rectTop > 0) {
                 // x, y 是鼠标在缩略图中的相对坐标
                 const x = event.clientX - this.rectLeft;
@@ -179,8 +183,12 @@ export default {
                 // 判断点击位置，是否在选中框内
                 if ((x >= this.thumbnail.checkOffsetX && x <= (this.thumbnail.checkOffsetX + this.thumbnail.checkWidth))
                     && (y >= this.thumbnail.checkOffsetY && y <= (this.thumbnail.checkOffsetY + this.thumbnail.checkHeight))) {
-                    // 参数：鼠标首次点击坐标，至当前坐标的偏移量
-                    this.$emit('onDrag', x - this.firstClickX, y - this.firstClickY);
+                    // (x - this.firstClickX) 表示：鼠标首次点击坐标，至当前坐标的偏移量
+                    // offsetX、offsetY 表示：缩略图偏移量 转换为 地图偏移量
+                    const offsetX = ((x - this.firstClickX) / this.thumbnail.width) * this.map.width;
+                    const offsetY = ((y - this.firstClickY) / this.thumbnail.height) * this.map.height;
+                    // 当前滚动条偏移量 + 地图偏移量 = 目标滚动条偏移量
+                    this.$emit('onDrag', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
                 }
             }
         }
