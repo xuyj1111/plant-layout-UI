@@ -85,7 +85,9 @@
             <span>&nbsp;&nbsp;{{ map.per }}%</span>
         </div>
         <!-- 缩略图 -->
-        <canvas id='canvas' ref="mapDom" width="203" height="133"> </canvas>
+        <canvas id='canvas' ref="mapDom" width="203" height="133" @mousedown="startDraging" @mouseup="stopDraging"
+            @mousemove="draging">
+        </canvas>
     </section>
 </template>
 
@@ -118,12 +120,19 @@ export default {
                 // 高度
                 height: "",
                 // 是否传送带
-                conveyor: ""
+                conveyor: "",
+                // 缩略图相对于页面左边的距离，用来计算鼠标在缩略图的相对坐标
+                rectLeft: 0,
+                // 缩略图相对于页面的顶部的距离，用来计算鼠标在缩略图的相对坐标
+                rectTop: 0,
+                // 鼠标在缩略图首次点击的坐标
+                firstClickX: 0,
+                firstClickY: 0
             }
         }
     },
     computed: {
-        ...mapState(['map'])
+        ...mapState(['map', 'thumbnail'])
     },
     methods: {
         // 放大地图
@@ -144,6 +153,35 @@ export default {
                 this.map.per -= 10;
                 // 触发父vue执行方法
                 this.$emit('onBiggerOrSmaller');
+            }
+        },
+        // 开始拖动
+        startDraging(event) {
+            const rect = this.$refs['mapDom'].getBoundingClientRect();
+            this.rectLeft = rect.left;
+            this.rectTop = rect.top;
+            this.firstClickX = event.clientX - this.rectLeft;
+            this.firstClickY = event.clientY - this.rectTop;
+            console.log('start draging...');
+        },
+        // 停止拖动
+        stopDraging() {
+            this.rectLeft = 0;
+            this.rectTop = 0;
+            console.log('over drag');
+        },
+        // 拖动的具体实现
+        draging(event) {
+            if (this.rectLeft > 0 && this.rectTop > 0) {
+                // x, y 是鼠标在缩略图中的相对坐标
+                const x = event.clientX - this.rectLeft;
+                const y = event.clientY - this.rectTop;
+                // 判断点击位置，是否在选中框内
+                if ((x >= this.thumbnail.checkOffsetX && x <= (this.thumbnail.checkOffsetX + this.thumbnail.checkWidth))
+                    && (y >= this.thumbnail.checkOffsetY && y <= (this.thumbnail.checkOffsetY + this.thumbnail.checkHeight))) {
+                    // 参数：鼠标首次点击坐标，至当前坐标的偏移量
+                    this.$emit('onDrag', x - this.firstClickX, y - this.firstClickY);
+                }
             }
         }
     }

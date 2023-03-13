@@ -3,7 +3,7 @@
         <Menu ref="menuChild" />
         <DisMap ref="disMapChild" @onDraw="draw" />
         <!-- 方法缩小，都需要加载一遍地图 -->
-        <Operation ref="operationChild" @onBiggerOrSmaller="init" />
+        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging" />
     </body>
 </template>
 
@@ -123,7 +123,7 @@ export default {
             });
             this.drawThumbnailCheck();
         },
-        // 画缩略图中选中边框
+        // 画缩略图的选中框
         drawThumbnailCheck() {
             const thumbnailContext = this.$refs.operationChild.$refs['mapDom'].getContext("2d");
             const disMap = this.$refs.disMapChild;
@@ -134,18 +134,30 @@ export default {
             // 计算滚动值和实际区域的百分比
             const offsetX = disMap.$refs['section'].scrollLeft / this.map.width;
             const offsetY = disMap.$refs['section'].scrollTop / this.map.height;
-
+            // 赋值给全局变量
+            this.thumbnail.checkOffsetX = this.thumbnail.width * offsetX;
+            this.thumbnail.checkOffsetY = this.thumbnail.height * offsetY;
+            this.thumbnail.checkWidth = this.thumbnail.width * ((widthPer > 1) ? 1 : widthPer);
+            this.thumbnail.checkHeight = this.thumbnail.height * ((heightPer > 1) ? 1 : heightPer);
+            // 画图
             thumbnailContext.strokeStyle = "blue";
             thumbnailContext.beginPath();
             thumbnailContext.lineWidth = 2;
             thumbnailContext.rect(
-                this.thumbnail.width * offsetX,
-                this.thumbnail.height * offsetY,
-                this.thumbnail.width * ((widthPer > 1) ? 1 : widthPer),
-                this.thumbnail.height * ((heightPer > 1) ? 1 : heightPer)
+                this.thumbnail.checkOffsetX,
+                this.thumbnail.checkOffsetY,
+                this.thumbnail.checkWidth,
+                this.thumbnail.checkHeight
             );
             thumbnailContext.stroke();
             thumbnailContext.lineWidth = 1;
+        },
+        // 拖动缩略图选中框后执行
+        draging(offsetX, offsetY) {
+            const sectionOffsetX = (offsetX / this.thumbnail.width) * this.map.width;
+            const sectionOffsetY = (offsetY / this.thumbnail.height) * this.map.height;
+            this.$refs['disMapChild'].$refs['section'].scrollTo(sectionOffsetX, sectionOffsetY);
+            this.draw();
         },
         throttle(fn, delay) {
             let timer = null;

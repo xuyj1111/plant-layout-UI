@@ -19,10 +19,17 @@ export default createStore({
         shapes: new Map(),
         // 选中的设备（设备号+工作号），未选中为空字符串
         choose: '',
-        // 缩略图，常量
+        // 缩略图
         thumbnail: {
+            // 常量宽度，高度
             width: 203,
-            height: 133
+            height: 133,
+            // 选中框宽度,高度
+            checkWidth: 0,
+            checkHeight: 0,
+            // 选中框x,y
+            checkOffsetX: 0,
+            checkOffsetY: 0
         }
     }
 })
