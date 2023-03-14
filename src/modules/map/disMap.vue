@@ -53,11 +53,18 @@ export default {
                 );
                 if (mapContext.isPointInPath(p.x, p.y)) {
                     this.$store.state.choose = key;
+                    // 信息栏更新
+                    this.$emit('updateForm', value);
                     break;
                 } else {
                     this.$store.state.choose = '';
                 }
             };
+            // 取消选中
+            if (this.$store.state.choose == '') {
+                // 清除信息栏
+                this.$emit('clearForm');
+            }
         },
         // 获取地图数据，即赋值给 this.$store.state.shapes
         setPlantData() {

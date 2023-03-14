@@ -1,9 +1,19 @@
 <template>
     <body>
         <Menu ref="menuChild" />
-        <DisMap ref="disMapChild" @onDraw="draw" />
-        <!-- 方法缩小，都需要加载一遍地图 -->
-        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging" @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" />
+        <!-- 
+            @onDraw: 画地图
+            @updateForm: 信息栏更新值
+            @clearForm: 信息栏清除
+         -->
+        <DisMap ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm" />
+        <!-- 
+            @onBiggerOrSmaller: 方法缩小，都需要加载一遍地图
+            @onDrag: 拖拽选中框
+            @setScrollTopAndScrollLeft: 控制滚动条
+        -->
+        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" />
     </body>
 </template>
 
@@ -154,6 +164,32 @@ export default {
             const dom = this.$refs['disMapChild'].$refs['section'];
             this.map.scrollLeft = dom.scrollLeft;
             this.map.scrollTop = dom.scrollTop;
+        },
+        // 信息栏更新
+        updateForm(value) {
+            const operation = this.$refs['operationChild'];
+            operation.forMsg.deviceNum = value['deviceNum'];
+            operation.forMsg.stationNum = value['stationNum'];
+            operation.formLabel.deviceNum = value['deviceNum'];
+            operation.formLabel.stationNum = value['stationNum'];
+            operation.formLabel.coordX = value['coordX'];
+            operation.formLabel.coordY = value['coordY'];
+            operation.formLabel.width = value['width'];
+            operation.formLabel.height = value['height'];
+            operation.formLabel.conveyor = value['conveyor'];
+        },
+        // 信息栏清除
+        clearForm() {
+            const operation = this.$refs['operationChild'];
+            operation.forMsg.deviceNum = '';
+            operation.forMsg.stationNum = '';
+            operation.formLabel.deviceNum = '';
+            operation.formLabel.stationNum = '';
+            operation.formLabel.coordX = '';
+            operation.formLabel.coordY = '';
+            operation.formLabel.width = '';
+            operation.formLabel.height = '';
+            operation.formLabel.conveyor = '';
         },
         throttle(fn, delay) {
             let timer = null;
