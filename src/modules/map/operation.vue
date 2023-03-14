@@ -346,7 +346,17 @@ export default {
         },
         // 更新地图数据
         updatePlantData() {
-
+            this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(this.$store.state.shapes.values()))), {
+                params: {
+                    name: this.$store.state.plant
+                }
+            }).then(function (response) {
+                console.log('地图数据更新成功！');
+            }).catch(function (error) {
+                console.log(error);
+                window.alert('更新地图错误！请检查！');
+                return false;
+            })
         },
         // 判断字符串是否都是数字，包括最多只有1个小数点
         isNumeric(str) {
