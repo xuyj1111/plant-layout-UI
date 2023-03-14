@@ -102,24 +102,36 @@ export default {
                 console.log("第" + num + "个设备编号+工作号已存在! deviceNum[" + data['deviceNum'] + "], stationNum[" + data['stationNum'] + "], 跳过");
                 return false;
             } else if (this.isEmpty(data["coordX"])) {
-                console.log("第" + num + "个坐标x为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log("第" + num + "个坐标X为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else if (!this.isNumeric(data["coordX"])) {
+                console.log("第" + num + "个坐标X不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
                 return false;
             } else if (this.isEmpty(data["coordY"])) {
-                console.log("第" + num + "个坐标y为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log("第" + num + "个坐标Y为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
+            } else if (!this.isNumeric(data["coordY"])) {
+                console.log("第" + num + "个坐标Y不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
                 return false;
             } else if (this.isEmpty(data["width"])) {
                 console.log("第" + num + "个宽度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
                 return false;
+            } else if (!this.isNumeric(data["width"])) {
+                console.log("第" + num + "个宽度不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
             } else if (this.isEmpty(data["height"])) {
                 console.log("第" + num + "个高度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
                 return false;
+            } else if (!this.isNumeric(data["height"])) {
+                console.log("第" + num + "个高度不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                return false;
             } else {
-                if (parseInt(data["coordX"]) + parseInt(data["width"]) > 580) {
-                    console.log("第" + num + "个坐标x加宽度不可超过580! deviceNum[" + data['deviceNum'] + "], 跳过");
+                if (parseFloat(data["coordX"]) + parseFloat(data["width"]) > 580) {
+                    console.log("第" + num + "个坐标X加宽度不可超过580! deviceNum[" + data['deviceNum'] + "], 跳过");
                     return false;
                 }
-                if (parseInt(data["coordY"]) + parseInt(data["height"]) > 380) {
-                    console.log("第" + num + "个坐标y加高度不可超过380! deviceNum[" + data['deviceNum'] + "], 跳过");
+                if (parseFloat(data["coordY"]) + parseFloat(data["height"]) > 380) {
+                    console.log("第" + num + "个坐标Y加高度不可超过380! deviceNum[" + data['deviceNum'] + "], 跳过");
                     return false;
                 }
                 return true;
@@ -131,6 +143,10 @@ export default {
                 return true;
             }
             return false;
+        },
+        // 判断字符串是否都是数字，包括最多只有1个小数点
+        isNumeric(str) {
+            return /^\d+(\.\d+)?$/.test(str);
         }
     }
 }

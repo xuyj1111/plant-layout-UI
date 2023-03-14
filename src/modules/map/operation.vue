@@ -19,28 +19,28 @@
         <!-- 不可编辑信息栏 -->
         <div id="info" v-show="!switch_value">
             <el-descriptions title="设备信息" :column="1" border>
-                <el-descriptions-item label="设备编号" label-align="right" align="center" width="100px">{{ forMsg.deviceNum
+                <el-descriptions-item label="设备编号" label-align="right" align="center" width="100px">{{ formMsg.deviceNum
                 }}</el-descriptions-item>
-                <el-descriptions-item label="岗位号" label-align="right" align="center" width="100px">{{ forMsg.stationNum
+                <el-descriptions-item label="岗位号" label-align="right" align="center" width="100px">{{ formMsg.stationNum
                 }}</el-descriptions-item>
             </el-descriptions>
             <el-descriptions title="问题点" :column="1" border>
-                <el-descriptions-item label="总数" label-align="right" align="center" width="100px">{{ forMsg.problem.count
+                <el-descriptions-item label="总数" label-align="right" align="center" width="100px">{{ formMsg.problem.count
                 }}</el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
-                    <font color="red">{{ forMsg.problem.needHelpAndUnfinished }}</font>
+                    <font color="red">{{ formMsg.problem.needHelpAndUnfinished }}</font>
                     <font> / </font>
-                    <font color="green">{{ forMsg.problem.needHelpAndfinished }}</font>
+                    <font color="green">{{ formMsg.problem.needHelpAndfinished }}</font>
                 </el-descriptions-item>
                 <el-descriptions-item label="无需协助" label-align="right" align="center" width="100px">
-                    <font color="red">{{ forMsg.problem.noHelpAndUnfinished }}</font>
+                    <font color="red">{{ formMsg.problem.noHelpAndUnfinished }}</font>
                     <font> / </font>
-                    <font color="green">{{ forMsg.problem.noHelpAndfinished }}</font>
+                    <font color="green">{{ formMsg.problem.noHelpAndfinished }}</font>
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
-                    <el-tag size="small">{{ (forMsg.problem.count != 0) ?
-                        ((forMsg.problem.needHelpAndfinished + forMsg.problem.noHelpAndfinished) /
-                            forMsg.problem.count) * 100 : 0 }}%</el-tag>
+                    <el-tag size="small">{{ (formMsg.problem.count != 0) ?
+                        ((formMsg.problem.needHelpAndfinished + formMsg.problem.noHelpAndfinished) /
+                            formMsg.problem.count) * 100 : 0 }}%</el-tag>
                 </el-descriptions-item>
             </el-descriptions>
 
@@ -49,23 +49,23 @@
 
         <!-- 可编辑信息栏 -->
         <div id="edit_info" v-show="switch_value">
-            <el-form label-width="70px" :model="formLabel">
-                <el-form-item label="设备编号">
+            <el-form label-width="80px" :model="formLabel" :rules="rules" ref="form">
+                <el-form-item label="设备编号" prop="deviceNum">
                     <el-input v-model="formLabel.deviceNum" />
                 </el-form-item>
                 <el-form-item label="岗位号">
                     <el-input v-model="formLabel.stationNum" />
                 </el-form-item>
-                <el-form-item label="坐标X">
+                <el-form-item label="坐标X" prop="coordX">
                     <el-input v-model="formLabel.coordX" />
                 </el-form-item>
-                <el-form-item label="坐标Y">
+                <el-form-item label="坐标Y" prop="coordY">
                     <el-input v-model="formLabel.coordY" />
                 </el-form-item>
-                <el-form-item label="宽度">
+                <el-form-item label="宽度" prop="width">
                     <el-input v-model="formLabel.width" />
                 </el-form-item>
-                <el-form-item label="高度">
+                <el-form-item label="高度" prop="height">
                     <el-input v-model="formLabel.height" />
                 </el-form-item>
                 <el-form-item label="传送带" prop="conveyor">
@@ -73,8 +73,8 @@
                     <el-radio v-model="formLabel.conveyor" label='false'>否</el-radio>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="">保存</el-button>
-                    <el-button type="danger">删除</el-button>
+                    <el-button type="primary" @click="saveMachine('form')">保存</el-button>
+                    <el-button type="danger" @click="deleteMachine('form')">删除</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -94,6 +94,7 @@
 
 <script>
 import { Search } from '@element-plus/icons-vue'
+import { useWindowScroll } from '@vueuse/core';
 import { mapState } from 'vuex'
 
 export default {
@@ -108,7 +109,7 @@ export default {
             // 切换是否可编辑
             switch_value: false,
             // 不可编辑信息栏
-            forMsg: {
+            formMsg: {
                 // 设备编号
                 deviceNum: "",
                 // 岗位号
@@ -150,7 +151,27 @@ export default {
             rectTop: 0,
             // 鼠标在缩略图首次点击的坐标
             firstClickX: 0,
-            firstClickY: 0
+            firstClickY: 0,
+            rules: {
+                deviceNum: [
+                    { required: true, message: '设备编号不能为空', trigger: 'submit' }
+                ],
+                coordX: [
+                    { required: true, message: '坐标X不能为空', trigger: 'submit' }
+                ],
+                coordY: [
+                    { required: true, message: '坐标Y不能为空', trigger: 'submit' }
+                ],
+                width: [
+                    { required: true, message: '宽度不能为空', trigger: 'submit' }
+                ],
+                height: [
+                    { required: true, message: '高度不能为空', trigger: 'submit' }
+                ],
+                conveyor: [
+                    { required: true, message: '传送带选项不能为空', trigger: 'submit' }
+                ]
+            }
         }
     },
     computed: {
@@ -213,6 +234,123 @@ export default {
                     this.$emit('onDrag', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
                 }
             }
+        },
+        // 添加/更新设备
+        saveMachine(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    if (this.$store.state.choose == '') {
+                        if (!confirm('你确定要添加此设备吗？')) {
+                            // 否 跳出
+                            return;
+                        }
+                        // 判断设备编号 + 工位号是否存在
+                        if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
+                            window.alert('该设备编号 + 工位号已存在！操作失败！');
+                            return;
+                        }
+                    } else {
+                        if (!confirm('你确定要更新此设备吗？')) {
+                            // 否 跳出
+                            return;
+                        }
+                    }
+                    // 坐标X、Y、width、height是否都是数字
+                    if (!this.isNumeric(this.formLabel.coordX)) {
+                        window.alert('坐标X不是数字！操作失败！');
+                        return;
+                    }
+                    if (!this.isNumeric(this.formLabel.coordY)) {
+                        window.alert('坐标Y不是数字！操作失败！');
+                        return;
+                    }
+                    if (!this.isNumeric(this.formLabel.width)) {
+                        window.alert('宽度不是数字！操作失败！');
+                        return;
+                    }
+                    if (!this.isNumeric(this.formLabel.height)) {
+                        window.alert('高度不是数字！操作失败！');
+                        return;
+                    }
+                    if (!this.isNumeric(this.formLabel.coordX)) {
+                        window.alert('坐标X不是数字！操作失败！');
+                        return;
+                    }
+                    // x+width不能超过580，y+height不能超过380
+                    if ((parseFloat(this.formLabel.coordX) + parseFloat(this.formLabel.width)) > 580) {
+                        window.alert('坐标X加宽度不可超过580！操作失败！');
+                        return;
+                    }
+                    if ((parseFloat(this.formLabel.coordY) + parseFloat(this.formLabel.height)) > 380) {
+                        window.alert('坐标Y加高度不可超过380！操作失败！');
+                        return;
+                    }
+                    // 添加/更新设备操作
+                    if (this.$store.state.choose == '') {
+                        this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                        this.$store.state.shapes.set(this.$store.state.choose, {
+                            deviceNum: this.formLabel.deviceNum,
+                            stationNum: this.formLabel.stationNum,
+                            coordX: this.formLabel.coordX,
+                            coordY: this.formLabel.coordY,
+                            width: this.formLabel.width,
+                            height: this.formLabel.height,
+                            conveyor: this.formLabel.conveyor
+                        });
+                        this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                    } else {
+                        this.$store.state.shapes.set(this.$store.state.choose, {
+                            deviceNum: this.formLabel.deviceNum,
+                            stationNum: this.formLabel.stationNum,
+                            coordX: this.formLabel.coordX,
+                            coordY: this.formLabel.coordY,
+                            width: this.formLabel.width,
+                            height: this.formLabel.height,
+                            conveyor: this.formLabel.conveyor
+                        });
+                        // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
+                        // 只有修改操作要手动刷新地图
+                        this.$emit('onDraw');
+                    }
+                    this.updatePlantData();
+                }
+            });
+        },
+        // 删除设备
+        deleteMachine(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    if (this.$store.state.choose == '') {
+                        window.alert('未选中设备，无法删除！');
+                        return;
+                    } else {
+                        if (!confirm('你确定要删除此设备吗？')) {
+                            // 否 跳出
+                            return;
+                        }
+                    }
+                    this.$store.state.shapes.delete(this.$store.state.choose);
+                    this.$store.state.choose = '';
+                    this.formMsg.deviceNum = '';
+                    this.formMsg.stationNum = '';
+                    this.formLabel.deviceNum = '';
+                    this.formLabel.stationNum = '';
+                    this.formLabel.coordX = '';
+                    this.formLabel.coordY = '';
+                    this.formLabel.width = '';
+                    this.formLabel.height = '';
+                    this.formLabel.conveyor = '';
+                    this.updatePlantData();
+                }
+            });
+        },
+        // 更新地图数据
+        updatePlantData() {
+
+        },
+        // 判断字符串是否都是数字，包括最多只有1个小数点
+        isNumeric(str) {
+            return /^\d+(\.\d+)?$/.test(str);
         }
     }
 }

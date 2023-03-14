@@ -11,9 +11,10 @@
             @onBiggerOrSmaller: 方法缩小，都需要加载一遍地图
             @onDrag: 拖拽选中框
             @setScrollTopAndScrollLeft: 控制滚动条
+            @onDraw: 画地图
         -->
         <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
-            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" />
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" />
     </body>
 </template>
 
@@ -142,7 +143,7 @@ export default {
             this.thumbnail.checkWidth = this.thumbnail.width * ((widthPer > 1) ? 1 : widthPer);
             this.thumbnail.checkHeight = this.thumbnail.height * ((heightPer > 1) ? 1 : heightPer);
             // 画图
-            thumbnailContext.strokeStyle = "blue";
+            thumbnailContext.strokeStyle = "#00ffff";
             thumbnailContext.beginPath();
             thumbnailContext.lineWidth = 2;
             thumbnailContext.rect(
@@ -168,8 +169,8 @@ export default {
         // 信息栏更新
         updateForm(value) {
             const operation = this.$refs['operationChild'];
-            operation.forMsg.deviceNum = value['deviceNum'];
-            operation.forMsg.stationNum = value['stationNum'];
+            operation.formMsg.deviceNum = value['deviceNum'];
+            operation.formMsg.stationNum = value['stationNum'];
             operation.formLabel.deviceNum = value['deviceNum'];
             operation.formLabel.stationNum = value['stationNum'];
             operation.formLabel.coordX = value['coordX'];
@@ -181,8 +182,8 @@ export default {
         // 信息栏清除
         clearForm() {
             const operation = this.$refs['operationChild'];
-            operation.forMsg.deviceNum = '';
-            operation.forMsg.stationNum = '';
+            operation.formMsg.deviceNum = '';
+            operation.formMsg.stationNum = '';
             operation.formLabel.deviceNum = '';
             operation.formLabel.stationNum = '';
             operation.formLabel.coordX = '';
