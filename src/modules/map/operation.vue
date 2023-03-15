@@ -3,7 +3,7 @@
     <section id="operation">
         <!-- 搜索框 -->
         <div id="search">
-            <el-input v-model="search_input" class="w-50 m-2" placeholder="请输入设备编号">
+            <el-input v-model.trim.lazy="search" class="w-50 m-2" placeholder="请输入设备编号">
                 <template #prefix>
                     <el-icon class="el-input__icon">
                         <search />
@@ -105,7 +105,7 @@ export default {
     data() {
         return {
             // 搜索框输入
-            search_input: "",
+            search: "",
             // 切换是否可编辑
             switch_value: false,
             // 不可编辑信息栏
@@ -176,6 +176,21 @@ export default {
     },
     computed: {
         ...mapState(['map', 'thumbnail'])
+    },
+    mounted() {
+        // 监听search变量
+        this.$watch("search", (newVal, oldVal) => {
+
+            if(this.is)
+
+            if (newVal != '') {
+                console.log('取消选中');
+            } else {
+                console.log('选中的设备值+工位号: ' + newVal);
+            }
+            // 触发父vue执行方法
+            this.$emit('onDraw');
+        });
     },
     methods: {
         // 放大地图
