@@ -98,7 +98,7 @@ export default {
             if (this.isEmpty(data["deviceNum"])) {
                 console.log("第" + num + "个设备编号为空！跳过");
                 return false;
-            } else if (this.$store.state.shapes.has(data['deviceNum'] + data['stationNum'])) {
+            } else if (this.$store.state.shapes.has(data['deviceNum'] + '+' + data['stationNum'])) {
                 console.log("第" + num + "个设备编号+工作号已存在! deviceNum[" + data['deviceNum'] + "], stationNum[" + data['stationNum'] + "], 跳过");
                 return false;
             } else if (this.isEmpty(data["coordX"])) {

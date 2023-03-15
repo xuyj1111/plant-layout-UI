@@ -12,9 +12,12 @@
             @onDrag: 拖拽选中框
             @setScrollTopAndScrollLeft: 控制滚动条
             @onDraw: 画地图
+            @onSearch: 选中搜索到的设备
+            @clearForm: 信息栏清除
         -->
         <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
-            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" />
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" 
+            @onSearch="search" @clearForm="clearForm"/>
     </body>
 </template>
 
@@ -191,6 +194,12 @@ export default {
             operation.formLabel.width = '';
             operation.formLabel.height = '';
             operation.formLabel.conveyor = '';
+        },
+        // 传入搜索到的设备，放大缩小到合适大小，并将设备显示在地图中间
+        // 不想做，直接选中好了
+        search(shape) {
+            this.$store.state.choose = shape['deviceNum'] + '+' + shape['stationNum'];
+            this.updateForm(shape);
         },
         throttle(fn, delay) {
             let timer = null;

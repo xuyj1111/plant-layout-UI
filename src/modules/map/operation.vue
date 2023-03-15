@@ -3,7 +3,9 @@
     <section id="operation">
         <!-- 搜索框 -->
         <div id="search">
-            <el-input v-model.trim.lazy="search" class="w-50 m-2" placeholder="请输入设备编号">
+            <el-input v-model.trim="search" class="w-50 m-2"
+                :placeholder="this.$store.state.plant == 'assy' ? '请输入工位号' : '请输入设备编号'" @keyup.enter="handleSearch"
+                @blur="handleSearch">
                 <template #prefix>
                     <el-icon class="el-input__icon">
                         <search />
@@ -28,14 +30,14 @@
                 <el-descriptions-item label="总数" label-align="right" align="center" width="100px">{{ formMsg.problem.count
                 }}</el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
-                    <font color="red">{{ formMsg.problem.needHelpAndUnfinished }}</font>
-                    <font> / </font>
-                    <font color="green">{{ formMsg.problem.needHelpAndfinished }}</font>
+                    <span style="color: red">{{ formMsg.problem.needHelpAndUnfinished }}</span>
+                    <span> / </span>
+                    <span style="color: green">{{ formMsg.problem.needHelpAndfinished }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="无需协助" label-align="right" align="center" width="100px">
-                    <font color="red">{{ formMsg.problem.noHelpAndUnfinished }}</font>
-                    <font> / </font>
-                    <font color="green">{{ formMsg.problem.noHelpAndfinished }}</font>
+                    <span style="color: red">{{ formMsg.problem.noHelpAndUnfinished }}</span>
+                    <span> / </span>
+                    <span style="color: green">{{ formMsg.problem.noHelpAndfinished }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
                     <el-tag size="small">{{ (formMsg.problem.count != 0) ?
@@ -176,21 +178,6 @@ export default {
     },
     computed: {
         ...mapState(['map', 'thumbnail'])
-    },
-    mounted() {
-        // 监听search变量
-        this.$watch("search", (newVal, oldVal) => {
-
-            if(this.is)
-
-            if (newVal != '') {
-                console.log('取消选中');
-            } else {
-                console.log('选中的设备值+工位号: ' + newVal);
-            }
-            // 触发父vue执行方法
-            this.$emit('onDraw');
-        });
     },
     methods: {
         // 放大地图
@@ -372,6 +359,57 @@ export default {
                 window.alert('更新地图错误！请检查！');
                 return false;
             })
+        },
+        handleSearch() {
+            if (this.$store.state.plant == 'assy') {
+                console.log('搜索工位号: ' + this.search);
+                // 创建一个对象，key = 工位号，value = 设备编号+工位号
+                const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
+                    acc[cur.split('+').pop()] = cur;
+                    return acc;
+                }, {});
+                // 判断是否存在
+                if (values[this.search] != null) {
+                    this.$emit('onSearch', this.$store.state.shapes.get(values[this.search]));
+                } else {
+                    console.log('不存在该设备！');
+                    this.$store.state.choose = '';
+                    // 清除信息栏
+                    this.$emit('clearForm');
+                }
+            } else {
+                console.log('搜索设备编号: ' + this.search);
+                // 创建一个对象，key = 设备编号+工位号，value = 设备编号
+                // 设备编号可重复，所以作为value
+                const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
+                    const arr = cur.split('+');
+                    arr.pop();
+                    acc[cur] = arr[0];
+                    return acc;
+                }, {});
+                // 无法直接通过value来找key，所以只好遍历
+                var flag = false;
+                for (let key in values) {
+                    if (values[key] == this.search) {
+                        this.$emit('onSearch', this.$store.state.shapes.get(key));
+                        flag = true;
+                        break;
+                    }
+                }
+                if (!flag) {
+                    console.log('不存在该设备！');
+                    this.$store.state.choose = '';
+                    // 清除信息栏
+                    this.$emit('clearForm');
+                }
+            }
+        },
+        // 判断字符串是否为空
+        isEmpty(str) {
+            if (str == null || str.trim() == "") {
+                return true;
+            }
+            return false;
         },
         // 判断字符串是否都是数字，包括最多只有1个小数点
         isNumeric(str) {
