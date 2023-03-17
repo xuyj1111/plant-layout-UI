@@ -46,7 +46,7 @@
                 </el-descriptions-item>
             </el-descriptions>
 
-            <el-link :underline="false" type="primary" id="link">问题点详情>></el-link>
+            <el-link :underline="false" type="primary" id="link" @click="toProblems">问题点详情>></el-link>
         </div>
 
         <!-- 可编辑信息栏 -->
@@ -404,6 +404,12 @@ export default {
                 }
             }
         },
+        // 跳转到问题点列表页
+        toProblems() {
+            // 告诉父vue
+            this.$emit('toProblems');
+            this.$router.push(this.$route.path + '/problems');
+        },
         // 判断字符串是否为空
         isEmpty(str) {
             if (str == null || str.trim() == "") {
@@ -465,11 +471,6 @@ export default {
 #map-button {
     margin: 0 17px;
 }
-
-/* 输入框+导入按钮 */
-
-
-
 
 /* 缩略图 */
 #canvas {

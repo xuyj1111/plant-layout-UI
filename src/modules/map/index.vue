@@ -6,7 +6,7 @@
             @updateForm: 信息栏更新值
             @clearForm: 信息栏清除
          -->
-        <DisMap ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm" />
+        <DisMap v-if="isMapPage" ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm" />
         <!-- 
             @onBiggerOrSmaller: 方法缩小，都需要加载一遍地图
             @onDrag: 拖拽选中框
@@ -15,9 +15,11 @@
             @onSearch: 选中搜索到的设备
             @clearForm: 信息栏清除
         -->
-        <Operation ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
-            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" 
-            @onSearch="search" @clearForm="clearForm"/>
+        <Operation v-if="isMapPage" ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" @onSearch="search" @clearForm="clearForm"
+            @toProblems="toProblems" />
+
+        <Problems v-else @toMap="toMap"></Problems>
     </body>
 </template>
 
@@ -25,29 +27,44 @@
 import Menu from './menu.vue';
 import DisMap from './disMap.vue';
 import Operation from './operation.vue';
+import Problems from './problems.vue';
 import { mapState } from 'vuex'
 
 const plants = new Set(['assy', 'logistics', 'case', 'gear', 'pulley', 'differential', 'heat']);
 
 export default {
     name: 'Map',
+    data() {
+        return {
+            // 标记当前页面，是否为地图页，问题点页=flase
+            isMapPage: true
+        }
+    },
     components: {
         Menu,
         DisMap,
-        Operation
+        Operation,
+        Problems
     },
     computed: {
         ...mapState(['map', 'thumbnail'])
     },
     mounted() {
-        const suffix = this.$route.path.substring('/map/'.length);
+        // 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
+        const arrStr = this.$route.path.split('/');
         // 后缀名不是厂房后缀名，跳转到404
-        if (!plants.has(suffix)) {
+        if (!plants.has(arrStr[2])) {
+            console.log('haha');
             this.$router.push('/404');
         } else {
-            this.$store.state.plant = suffix;
+            this.$store.state.plant = arrStr[2];
             this.init();
             this.$store.state.choose = '';
+        }
+
+        // 问题点列表页
+        if (arrStr.length == 4) {
+            this.isMapPage = false;
         }
 
         // 监听滚动条
@@ -60,6 +77,11 @@ export default {
                 console.log('滚动条拖动结束')
             }, 200)
         );
+
+        // 监听浏览器页面大小变化
+        window.addEventListener('resize', () => {
+            this.init();
+        });
     },
     beforeRouteUpdate(to, from, next) {
         const suffix = this.$route.path.substring('/map/'.length);
@@ -77,6 +99,7 @@ export default {
         init() {
             const menu = this.$refs.menuChild;
             const disMap = this.$refs.disMapChild;
+            console.log('刷新地图');
             menu.handleMouseLeave();
             disMap.init();
             this.setScrollTopAndScrollLeft();
@@ -200,6 +223,13 @@ export default {
         search(shape) {
             this.$store.state.choose = shape['deviceNum'] + '+' + shape['stationNum'];
             this.updateForm(shape);
+        },
+        toMap() {
+            this.isMapPage = true;
+            this.init();
+        },
+        toProblems() {
+            this.isMapPage = false;
         },
         throttle(fn, delay) {
             let timer = null;

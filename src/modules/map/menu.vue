@@ -107,6 +107,8 @@ export default {
 
 #logout {
     margin: 50px 10px;
+    position: relative;
+    top: calc(100% - 480px);
 }
 
 #assy.fixed {
