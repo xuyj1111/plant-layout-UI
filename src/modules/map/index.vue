@@ -82,6 +82,16 @@ export default {
         window.addEventListener('resize', () => {
             this.init();
         });
+
+        // 监听isMapPage变量
+        this.$watch("isMapPage", (newVal, oldVal) => {
+            this.$nextTick(function () {
+                // $nextTick回调函数会在 DOM 渲染后调用，因此避免了init方法中用到 null 的 DOM
+                if (this.isMapPage) {
+                    this.init();
+                }
+            })
+        });
     },
     beforeRouteUpdate(to, from, next) {
         const suffix = this.$route.path.substring('/map/'.length);
@@ -226,7 +236,7 @@ export default {
         },
         toMap() {
             this.isMapPage = true;
-            this.init();
+            // this.init();
         },
         toProblems() {
             this.isMapPage = false;
