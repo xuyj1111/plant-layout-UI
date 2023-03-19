@@ -15,6 +15,7 @@ export default {
         }
     },
     mounted() {
+        console.log('跳转到地图页');
         var that = this;
         // 地图中的点击事件，以选中设备
         this.$refs.mapDom.addEventListener('click', function (e) {

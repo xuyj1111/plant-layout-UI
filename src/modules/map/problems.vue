@@ -30,7 +30,7 @@
             </span>
         </div>
         <div id="table">
-            <el-table :data="tableData" stripe fixed style="width: 100%" max-height="400"
+            <el-table :data="tableData" stripe fixed style="width: 100%"
                 :cell-style="{ 'text-align': 'center' }"
                 :header-cell-style="{ background: '#10472D', color: 'white', 'line-hight': '50px', 'text-align': 'center' }">
                 <el-table-column prop="id" label="序号" width="120">
@@ -70,8 +70,8 @@ export default {
     },
     data() {
         return {
-            deviceNum: '1',
-            stationNum: '2',
+            deviceNum: '',
+            stationNum: '',
             search: '',
             options: [{
                 value: 'all',
@@ -134,6 +134,12 @@ export default {
                 address: '上海市普陀区金沙江路 1516 弄'
             }]
         }
+    },
+    mounted() {
+        console.log('跳转到问题点详情页');
+        const arr = this.$store.state.choose.split('+');
+        this.deviceNum = arr[0];
+        this.stationNum = arr[1];
     },
     methods: {
         // 判断字符串是否为空

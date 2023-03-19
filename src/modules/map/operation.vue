@@ -406,9 +406,12 @@ export default {
         },
         // 跳转到问题点列表页
         toProblems() {
-            // 告诉父vue
-            this.$emit('toProblems');
-            this.$router.push(this.$route.path + '/problems');
+            // 选中才可以点击跳转
+            if (!this.isEmpty(this.$store.state.choose)) {
+                // 告诉父vue
+                this.$emit('toProblems');
+                this.$router.push(this.$route.path + '/problems');
+            }
         },
         // 判断字符串是否为空
         isEmpty(str) {
