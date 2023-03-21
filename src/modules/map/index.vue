@@ -5,8 +5,10 @@
             @onDraw: 画地图
             @updateForm: 信息栏更新值
             @clearForm: 信息栏清除
+            @setProblemCount：赋值信息栏问题点的数量
          -->
-        <DisMap v-if="isMapPage" ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm" />
+        <DisMap v-if="isMapPage" ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm"
+            @setProblemCount="setProblemCount" />
         <!-- 
             @onBiggerOrSmaller: 方法缩小，都需要加载一遍地图
             @onDrag: 拖拽选中框
@@ -240,6 +242,32 @@ export default {
         },
         toProblems() {
             this.isMapPage = false;
+        },
+        setProblemCount() {
+            const arr = this.$store.state.choose.split('+');
+            const deviceNum = arr[0];
+            const stationNum = arr[1];
+            console.log(`总数: ${this.execCountRequest(deviceNum, stationNum, null, null)}`);
+            console.log(`需协助未完成: ${this.execCountRequest(deviceNum, stationNum, true, 'unfinished')}`);
+            console.log(`需协助已完成: ${this.execCountRequest(deviceNum, stationNum, true, 'finished')}`);
+            console.log(`无协助未完成: ${this.execCountRequest(deviceNum, stationNum, false, 'unfinished')}`);
+            console.log(`无协助已完成: ${this.execCountRequest(deviceNum, stationNum, false, 'finished')}`);
+        },
+        execCountRequest(deviceNum, stationNum, isNeedHelp, status) {
+            this.$axiosInstance.get("/plant/problems/count", {
+                params: {
+                    plant: this.$store.state.plant,
+                    deviceNum: deviceNum,
+                    stationNum: stationNum,
+                    isNeedHelp: isNeedHelp,
+                    status: status
+                }
+            }).then(function (response) {
+                return response.data;
+            }).catch(function (error) {
+                console.log(error);
+                return false;
+            })
         },
         throttle(fn, delay) {
             let timer = null;

@@ -30,6 +30,7 @@ export default {
             }
             // 触发父vue执行方法
             this.$emit('onDraw');
+            this.$emit('setProblemCount');
         });
     },
     computed: {
