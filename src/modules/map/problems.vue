@@ -37,7 +37,7 @@
                 </el-table-column>
                 <el-table-column prop="name" label="提交人" width="120">
                 </el-table-column>
-                <el-table-column prop="datetime" label="提交日期" width="180">
+                <el-table-column prop="date_created" label="提交日期" width="180">
                 </el-table-column>
                 <el-table-column prop="describe" label="问题点描述" width="180">
                 </el-table-column>
