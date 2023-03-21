@@ -26,7 +26,7 @@ export default {
             if (newVal == '') {
                 console.log('取消选中');
             } else {
-                console.log('选中的设备值+工位号: ' + newVal);
+                console.log(`选中的设备值+工位号: ${newVal}`);
             }
             // 触发父vue执行方法
             this.$emit('onDraw');
@@ -85,7 +85,7 @@ export default {
                         shapes.set(jsonObj[i]['deviceNum'] + '+' + jsonObj[i]['stationNum'], jsonObj[i]);
                     }
                 }
-                console.log('地图切换完成, 共' + shapes.size + '个设备');
+                console.log(`地图切换完成, 共${shapes.size}个设备`);
                 // 触发父vue执行方法
                 that.$emit('onDraw');
             }).catch(function (error) {
@@ -97,42 +97,42 @@ export default {
         // 切换地图校验json
         batchValidation(data, num) {
             if (this.isEmpty(data["deviceNum"])) {
-                console.log("第" + num + "个设备编号为空！跳过");
+                console.log(`第${num}个设备编号为空！跳过`);
                 return false;
             } else if (this.$store.state.shapes.has(data['deviceNum'] + '+' + data['stationNum'])) {
-                console.log("第" + num + "个设备编号+工作号已存在! deviceNum[" + data['deviceNum'] + "], stationNum[" + data['stationNum'] + "], 跳过");
+                console.log(`第${num}个设备编号+工作号已存在! deviceNum[${data['deviceNum']}], stationNum[${data['stationNum']}], 跳过`);
                 return false;
             } else if (this.isEmpty(data["coordX"])) {
-                console.log("第" + num + "个坐标X为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个坐标X为空! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (!this.isNumeric(data["coordX"])) {
-                console.log("第" + num + "个坐标X不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个坐标X不是数字! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (this.isEmpty(data["coordY"])) {
-                console.log("第" + num + "个坐标Y为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个坐标Y为空! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (!this.isNumeric(data["coordY"])) {
-                console.log("第" + num + "个坐标Y不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个坐标Y不是数字! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (this.isEmpty(data["width"])) {
-                console.log("第" + num + "个宽度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个宽度为空! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (!this.isNumeric(data["width"])) {
-                console.log("第" + num + "个宽度不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个宽度不是数字! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (this.isEmpty(data["height"])) {
-                console.log("第" + num + "个高度为空! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个高度为空! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else if (!this.isNumeric(data["height"])) {
-                console.log("第" + num + "个高度不是数字! deviceNum[" + data['deviceNum'] + "], 跳过");
+                console.log(`第${num}个高度不是数字! deviceNum[${data['deviceNum']}], 跳过`);
                 return false;
             } else {
                 if (parseFloat(data["coordX"]) + parseFloat(data["width"]) > 580) {
-                    console.log("第" + num + "个坐标X加宽度不可超过580! deviceNum[" + data['deviceNum'] + "], 跳过");
+                    console.log(`第${num}个坐标X加宽度不可超过580! deviceNum[${data['deviceNum']}], 跳过`);
                     return false;
                 }
                 if (parseFloat(data["coordY"]) + parseFloat(data["height"]) > 380) {
-                    console.log("第" + num + "个坐标Y加高度不可超过380! deviceNum[" + data['deviceNum'] + "], 跳过");
+                    console.log(`第${num}个坐标Y加高度不可超过380! deviceNum[${data['deviceNum']}], 跳过`);
                     return false;
                 }
                 return true;

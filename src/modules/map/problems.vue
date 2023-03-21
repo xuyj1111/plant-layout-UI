@@ -4,8 +4,8 @@
             <div class="element">
                 <el-link :underline="false" type="primary" id="link" @click="toMap">&lt;&nbsp;返回</el-link>
             </div>
-            <span class="element">{{ isEmpty(deviceNum) ? '' : '设备编号：' + deviceNum }}</span>
-            <span class="element">{{ isEmpty(stationNum) ? '' : '工位号：' + stationNum }}</span>
+            <span class="element">{{ isEmpty(deviceNum) ? '' : `设备编号：${deviceNum}` }}</span>
+            <span class="element">{{ isEmpty(stationNum) ? '' : `工位号：${stationNum}` }}</span>
         </div>
 
         <div id="operation">

@@ -362,7 +362,7 @@ export default {
         },
         handleSearch() {
             if (this.$store.state.plant == 'assy') {
-                console.log('搜索工位号: ' + this.search);
+                console.log(`搜索工位号: ${this.search}`);
                 // 创建一个对象，key = 工位号，value = 设备编号+工位号
                 const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
                     acc[cur.split('+').pop()] = cur;
@@ -378,7 +378,7 @@ export default {
                     this.$emit('clearForm');
                 }
             } else {
-                console.log('搜索设备编号: ' + this.search);
+                console.log(`搜索设备编号: ${this.search}`);
                 // 创建一个对象，key = 设备编号+工位号，value = 设备编号
                 // 设备编号可重复，所以作为value
                 const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
