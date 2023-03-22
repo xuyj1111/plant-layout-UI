@@ -244,29 +244,38 @@ export default {
             this.isMapPage = false;
         },
         setProblemCount() {
-            const arr = this.$store.state.choose.split('+');
-            const deviceNum = arr[0];
-            const stationNum = arr[1];
-            console.log(`总数: ${this.execCountRequest(deviceNum, stationNum, null, null)}`);
-            console.log(`需协助未完成: ${this.execCountRequest(deviceNum, stationNum, true, 'unfinished')}`);
-            console.log(`需协助已完成: ${this.execCountRequest(deviceNum, stationNum, true, 'finished')}`);
-            console.log(`无协助未完成: ${this.execCountRequest(deviceNum, stationNum, false, 'unfinished')}`);
-            console.log(`无协助已完成: ${this.execCountRequest(deviceNum, stationNum, false, 'finished')}`);
+            if (this.$store.state.choose != '') {
+                const operation = this.$refs['operationChild'];
+                const arr = this.$store.state.choose.split('+');
+                const deviceNum = arr[0];
+                const stationNum = arr[1];
+
+                this.execCountRequest(deviceNum, stationNum, null, null)
+                // console.log(`需协助未完成: ${this.execCountRequest(deviceNum, stationNum, true, 'unfinished')}`);
+                // console.log(`需协助已完成: ${this.execCountRequest(deviceNum, stationNum, true, 'finished')}`);
+                // console.log(`无协助未完成: ${this.execCountRequest(deviceNum, stationNum, false, 'unfinished')}`);
+                // console.log(`无协助已完成: ${this.execCountRequest(deviceNum, stationNum, false, 'finished')}`);
+            }
         },
         execCountRequest(deviceNum, stationNum, isNeedHelp, status) {
-            this.$axiosInstance.get("/plant/problems/count", {
-                params: {
-                    plant: this.$store.state.plant,
-                    deviceNum: deviceNum,
-                    stationNum: stationNum,
-                    isNeedHelp: isNeedHelp,
-                    status: status
-                }
-            }).then(function (response) {
-                return response.data;
-            }).catch(function (error) {
-                console.log(error);
-                return false;
+
+            ////
+            return new Promise((resolve, reject) => {
+
+                this.$axiosInstance.get("/plant/problems/count", {
+                    params: {
+                        plant: this.$store.state.plant,
+                        deviceNum: deviceNum,
+                        stationNum: stationNum,
+                        isNeedHelp: isNeedHelp,
+                        status: status
+                    }
+                }).then(function (response) {
+                    resolve(response.data['count']);
+                }).catch(function (error) {
+                    reject(error);
+                })
+
             })
         },
         throttle(fn, delay) {
