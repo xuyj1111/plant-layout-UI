@@ -41,8 +41,8 @@
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
                     <el-tag size="small">{{ (formMsg.problem.count != 0) ?
-                        ((formMsg.problem.needHelpAndfinished + formMsg.problem.noHelpAndfinished) /
-                            formMsg.problem.count) * 100 : 0 }}%</el-tag>
+                        (((formMsg.problem.needHelpAndfinished + formMsg.problem.noHelpAndfinished) /
+                            formMsg.problem.count) * 100).toFixed(0) : 0 }}%</el-tag>
                 </el-descriptions-item>
             </el-descriptions>
 

@@ -244,24 +244,37 @@ export default {
             this.isMapPage = false;
         },
         setProblemCount() {
+            const operation = this.$refs['operationChild'];
             if (this.$store.state.choose != '') {
-                const operation = this.$refs['operationChild'];
                 const arr = this.$store.state.choose.split('+');
                 const deviceNum = arr[0];
                 const stationNum = arr[1];
 
-                this.execCountRequest(deviceNum, stationNum, null, null)
-                // console.log(`需协助未完成: ${this.execCountRequest(deviceNum, stationNum, true, 'unfinished')}`);
-                // console.log(`需协助已完成: ${this.execCountRequest(deviceNum, stationNum, true, 'finished')}`);
-                // console.log(`无协助未完成: ${this.execCountRequest(deviceNum, stationNum, false, 'unfinished')}`);
-                // console.log(`无协助已完成: ${this.execCountRequest(deviceNum, stationNum, false, 'finished')}`);
+                this.execCountRequest(deviceNum, stationNum, null, null).then(data => {
+                    operation.formMsg.problem.count = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
+                    operation.formMsg.problem.needHelpAndUnfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
+                    operation.formMsg.problem.needHelpAndfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, false, 'unfinished').then(data => {
+                    operation.formMsg.problem.noHelpAndUnfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, false, 'finished').then(data => {
+                    operation.formMsg.problem.noHelpAndfinished = data;
+                })
+            } else {
+                operation.formMsg.problem.count = 0;
+                operation.formMsg.problem.needHelpAndUnfinished = 0;
+                operation.formMsg.problem.needHelpAndfinished = 0;
+                operation.formMsg.problem.noHelpAndUnfinished = 0;
+                operation.formMsg.problem.noHelpAndfinished = 0;
             }
         },
         execCountRequest(deviceNum, stationNum, isNeedHelp, status) {
-
-            ////
             return new Promise((resolve, reject) => {
-
                 this.$axiosInstance.get("/plant/problems/count", {
                     params: {
                         plant: this.$store.state.plant,
@@ -275,7 +288,6 @@ export default {
                 }).catch(function (error) {
                     reject(error);
                 })
-
             })
         },
         throttle(fn, delay) {
