@@ -32,6 +32,7 @@ import Operation from './operation.vue';
 import Problems from './problems.vue';
 import { mapState } from 'vuex'
 
+// 固定的七个厂房名
 const plants = new Set(['assy', 'logistics', 'case', 'gear', 'pulley', 'differential', 'heat']);
 
 export default {
@@ -51,10 +52,20 @@ export default {
     computed: {
         ...mapState(['map', 'thumbnail'])
     },
+    /**
+     * 1. 登陆时进入
+     * 2. 刷新时进入
+     */
     mounted() {
-        // 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
+        /**
+         * 路由处理
+         * 
+         * 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
+         * 1. 后缀名不是厂房后缀名，跳转到404
+         * 2. 正确路径获得厂房名（plant）
+         *      初始化显示地图
+         */
         const arrStr = this.$route.path.split('/');
-        // 后缀名不是厂房后缀名，跳转到404
         if (!plants.has(arrStr[2])) {
             console.log('haha');
             this.$router.push('/404');
@@ -63,12 +74,10 @@ export default {
             this.init();
             this.$store.state.choose = '';
         }
-
-        // 问题点列表页
+        // 表示当前页面 = 问题点列表页
         if (arrStr.length == 4) {
             this.isMapPage = false;
         }
-
         // 监听滚动条
         const disMap = this.$refs.disMapChild;
         disMap.$refs['section'].addEventListener(
@@ -79,12 +88,12 @@ export default {
                 console.log('滚动条拖动结束')
             }, 200)
         );
-
         // 监听浏览器页面大小变化
         window.addEventListener('resize', () => {
-            this.init();
+            if (this.isMapPage) {
+                this.init();
+            }
         });
-
         // 监听isMapPage变量
         this.$watch("isMapPage", (newVal, oldVal) => {
             this.$nextTick(function () {
@@ -95,9 +104,14 @@ export default {
             })
         });
     },
+    /**
+     * 切换地图时进入
+     */
     beforeRouteUpdate(to, from, next) {
+        /**
+         * 路由处理
+         */
         const suffix = this.$route.path.substring('/map/'.length);
-        // 后缀名不是厂房后缀名，跳转到404
         if (!plants.has(suffix)) {
             this.$router.push('/404');
         } else {
@@ -107,7 +121,7 @@ export default {
         next();
     },
     methods: {
-        // 进入该页面的初始化
+        // 页面的初始化
         init() {
             const menu = this.$refs.menuChild;
             const disMap = this.$refs.disMapChild;

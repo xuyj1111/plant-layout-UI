@@ -30,8 +30,7 @@
             </span>
         </div>
         <div id="table">
-            <el-table :data="tableData" stripe fixed style="width: 100%"
-                :cell-style="{ 'text-align': 'center' }"
+            <el-table :data="tableData" stripe fixed style="width: 100%" :cell-style="{ 'text-align': 'center' }"
                 :header-cell-style="{ background: '#10472D', color: 'white', 'line-hight': '50px', 'text-align': 'center' }">
                 <el-table-column prop="id" label="序号" width="120">
                 </el-table-column>
@@ -75,13 +74,16 @@ export default {
             search: '',
             options: [{
                 value: 'all',
-                label: '所有问题点'
-            }, {
-                value: 'finished',
-                label: '已完成问题点'
+                label: '所有'
             }, {
                 value: 'unfinished',
-                label: '未完成问题点'
+                label: '未完成'
+            }, {
+                value: 'review',
+                label: '审核中'
+            }, {
+                value: 'finished',
+                label: '已完成'
             }],
             optionValue: 'all',
             tableData: [{

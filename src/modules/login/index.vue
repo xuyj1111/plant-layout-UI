@@ -33,6 +33,14 @@ export default {
         }
     },
     methods: {
+        /**
+         * 
+         * @param {*} formName 表单名
+         * 1. 表单校验
+         * 2. 登陆请求
+         *      成功获得用户名（user）角色（role），跳转到‘/map’
+         *      失败报错
+         */
         onSubmit(formName) {
             this.$refs[formName].validate((valid) => {
                 var that = this;
@@ -41,6 +49,8 @@ export default {
                         user: this.form.name,
                         pwd: this.form.password
                     }).then(function (response) {
+                        that.$store.state.user = that.form.name;
+                        that.$store.state.role = response.data;
                         sessionStorage.setItem('isLogin', 'true');
                         that.$router.push('/map');
                     }).catch(function (error) {

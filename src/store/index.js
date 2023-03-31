@@ -2,6 +2,10 @@ import { createStore } from 'vuex'
 
 export default createStore({
     state: {
+        // 登陆用户
+        user: '',
+        // 用户角色
+        role: '',
         // 厂房
         plant: 'assy',
         // 地图
