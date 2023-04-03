@@ -1,14 +1,12 @@
 <template>
     <body>
-        <Menu ref="menuChild" />
+        <Menu ref="menu" />
         <!-- 
             @onDraw: 画地图
             @updateForm: 信息栏更新值
             @clearForm: 信息栏清除
-            @setProblemCount：赋值信息栏问题点的数量
          -->
-        <DisMap v-if="isMapPage" ref="disMapChild" @onDraw="draw" @updateForm="updateForm" @clearForm="clearForm"
-            @setProblemCount="setProblemCount" />
+        <DisMap v-if="isMapPage" ref="disMap" @onDraw="onDraw" @updateForm="updateForm" @clearForm="clearForm" />
         <!-- 
             @onBiggerOrSmaller: 方法缩小，都需要加载一遍地图
             @onDrag: 拖拽选中框
@@ -17,8 +15,8 @@
             @onSearch: 选中搜索到的设备
             @clearForm: 信息栏清除
         -->
-        <Operation v-if="isMapPage" ref="operationChild" @onBiggerOrSmaller="init" @onDrag="draging"
-            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="draw" @onSearch="search" @clearForm="clearForm"
+        <Operation v-if="isMapPage" ref="operation" @onBiggerOrSmaller="init" @onDrag="draging"
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="onDraw" @onSearch="search" @clearForm="clearForm"
             @toProblems="toProblems" />
 
         <Problems v-else @toMap="toMap"></Problems>
@@ -30,7 +28,7 @@ import Menu from './menu.vue';
 import DisMap from './disMap.vue';
 import Operation from './operation.vue';
 import Problems from './problems.vue';
-import { mapState } from 'vuex'
+import { mapState, storeKey } from 'vuex'
 
 // 固定的七个厂房名
 const plants = new Set(['assy', 'logistics', 'case', 'gear', 'pulley', 'differential', 'heat']);
@@ -40,7 +38,7 @@ export default {
     data() {
         return {
             // 标记当前页面，是否为地图页，问题点页=flase
-            isMapPage: true
+            isMapPage: null
         }
     },
     components: {
@@ -53,47 +51,66 @@ export default {
         ...mapState(['map', 'thumbnail'])
     },
     /**
-     * 1. 登陆时进入
-     * 2. 刷新时进入
+     * 实例创建完后调用，在 mounted 之前；
+     * 可以访问 data、computed、methods 的数据；
+     * 无法访问 DOM；
+     * 
+     * 用于数据初始化、路由跳转；
+     */
+    created() {
+        // 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
+        const arrStr = this.$route.path.split('/');
+        if (plants.has(arrStr[2])) {
+            this.$store.state.plant = arrStr[2];
+            // 初始化 isMapPage
+            if (arrStr.length == 4) {
+                this.isMapPage = false;
+            } else {
+                this.isMapPage = true;
+                this.$store.state.choose = '';
+            }
+            // 初始化 全局变量
+            this.$store.commit('restoreStateFromStorage');
+        } else {
+            this.$router.push('/404');
+        }
+    },
+    /**
+     * 渲染完成后；
+     * 可以访问 DOM；
+     * 
+     * 因为可以访问 DOM，所以用于内容初始化、监听定义
      */
     mounted() {
-        /**
-         * 路由处理
-         * 
-         * 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
-         * 1. 后缀名不是厂房后缀名，跳转到404
-         * 2. 正确路径获得厂房名（plant）
-         *      初始化显示地图
-         */
-        const arrStr = this.$route.path.split('/');
-        if (!plants.has(arrStr[2])) {
-            console.log('haha');
-            this.$router.push('/404');
-        } else {
-            this.$store.state.plant = arrStr[2];
+        // 地图页的初始化
+        if (this.isMapPage) {
             this.init();
-            this.$store.state.choose = '';
-        }
-        // 表示当前页面 = 问题点列表页
-        if (arrStr.length == 4) {
-            this.isMapPage = false;
-        }
-        // 监听滚动条
-        const disMap = this.$refs.disMapChild;
-        disMap.$refs['section'].addEventListener(
-            "scroll",
-            this.throttle(() => {
-                this.draw();
-                this.setScrollTopAndScrollLeft();
-                console.log('滚动条拖动结束')
-            }, 200)
-        );
-        // 监听浏览器页面大小变化
-        window.addEventListener('resize', () => {
-            if (this.isMapPage) {
+
+            // 监听滚动条
+            const disMap = this.$refs.disMap;
+            disMap.$refs['section'].addEventListener(
+                "scroll",
+                this.throttle(() => {
+                    this.onDraw();
+                    this.setScrollTopAndScrollLeft();
+                    console.log('滚动条拖动结束')
+                }, 200)
+            );
+            // 监听浏览器页面大小变化
+            window.addEventListener('resize', () => {
                 this.init();
-            }
-        });
+            });
+            // 监听choose变量
+            this.$watch("$store.state.choose", (newVal, oldVal) => {
+                if (newVal == '') {
+                    console.log('未选中设备');
+                } else {
+                    console.log(`选中的设备值+工位号: ${newVal}`);
+                }
+                this.onDraw();
+                this.setProblemCount();
+            });
+        }
         // 监听isMapPage变量
         this.$watch("isMapPage", (newVal, oldVal) => {
             this.$nextTick(function () {
@@ -108,80 +125,52 @@ export default {
      * 切换地图时进入
      */
     beforeRouteUpdate(to, from, next) {
-        /**
-         * 路由处理
-         */
-        const suffix = this.$route.path.substring('/map/'.length);
-        if (!plants.has(suffix)) {
-            this.$router.push('/404');
-        } else {
-            this.init();
+        if (this.isMapPage) {
             this.$store.state.choose = '';
+            this.init();
+            this.clearForm();
         }
         next();
     },
     methods: {
-        // 页面的初始化
-        init() {
-            const menu = this.$refs.menuChild;
-            const disMap = this.$refs.disMapChild;
+        // 地图的初始化
+        async init() {
             console.log('刷新地图');
+            const menu = this.$refs.menu;
+            const disMap = this.$refs.disMap;
+            // 地图选项（menu.currentId）刷新
             menu.handleMouseLeave();
-            disMap.init();
+            // 地图数据（state.shapes）刷新
+            await disMap.setPlantData();
+            // 滚动条偏移值（state.map.scrollLeft、state.map.scrollTop）刷新
             this.setScrollTopAndScrollLeft();
+            // 表单数据刷新
+            if (this.$store.state.choose != "") {
+                this.updateForm(this.$store.state.shapes.get(this.$store.state.choose));
+            }
+            // 问题点表单数据更新
+            this.setProblemCount();
         },
-        // 画地图
-        draw() {
-            const mapContext = this.$refs.disMapChild.$refs['mapDom'].getContext("2d");
-            const thumbnailContext = this.$refs.operationChild.$refs['mapDom'].getContext("2d");
-
-            mapContext.clearRect(0, 0, this.map.width, this.map.height);
-            thumbnailContext.clearRect(0, 0, this.thumbnail.width, this.thumbnail.height);
-            mapContext.strokeStyle = "black";
-            thumbnailContext.strokeStyle = "black";
+        // 画地图 + 缩略图
+        onDraw() {
+            const mapContext = this.$refs.disMap.$refs['mapDom'].getContext("2d");
+            const thumbnailContext = this.$refs.operation.$refs['thumbnailDom'].getContext("2d");
             // 地图放大，设备也同样放大
             const multiple = (1.0 + 0.05 * this.map.per);
-
+            mapContext.clearRect(0, 0, this.map.width, this.map.height);
+            mapContext.strokeStyle = "black";
+            thumbnailContext.clearRect(0, 0, this.thumbnail.width, this.thumbnail.height);
+            thumbnailContext.strokeStyle = "black";
             this.$store.state.shapes.forEach((value, key) => {
-                mapContext.beginPath();
-                thumbnailContext.beginPath();
-                mapContext.rect(
-                    value["coordX"] * multiple,
-                    value["coordY"] * multiple,
-                    value["width"] * multiple,
-                    value["height"] * multiple
-                );
-                thumbnailContext.rect(
-                    value["coordX"] * 0.35,
-                    value["coordY"] * 0.35,
-                    value["width"] * 0.35,
-                    value["height"] * 0.35
-                );
-                if (key == this.$store.state.choose) {
-                    // 选中设备
-                    mapContext.fillStyle = "red";
-                    mapContext.fill();
-                    thumbnailContext.fillStyle = "red";
-                    thumbnailContext.fill();
-                } else {
-                    //传送带
-                    if (value["conveyor"] == "true") {
-                        mapContext.fillStyle = "#a8a6a5";
-                        mapContext.fill();
-                        thumbnailContext.fillStyle = "#a8a6a5";
-                        thumbnailContext.fill();
-                    }
-                    // 其他设备
-                    mapContext.stroke();
-                    thumbnailContext.stroke();
-                }
+                this.$refs.disMap.drawMap(value, key, multiple);
+                this.$refs.operation.drawThumbnail(value, key);
             });
             this.drawThumbnailCheck();
         },
         // 画缩略图的选中框
         drawThumbnailCheck() {
-            const thumbnailContext = this.$refs.operationChild.$refs['mapDom'].getContext("2d");
-            const disMap = this.$refs.disMapChild;
+            const thumbnailContext = this.$refs.operation.$refs['thumbnailDom'].getContext("2d");
+            const disMap = this.$refs.disMap;
 
             // 计算显示区域和实际区域的百分比
             const widthPer = disMap.$refs['section'].clientWidth / this.map.width;
@@ -209,18 +198,18 @@ export default {
         },
         // 拖动缩略图选中框后执行
         draging(scrollLeft, scrollTop) {
-            this.$refs['disMapChild'].$refs['section'].scrollTo(scrollLeft, scrollTop);
-            this.draw();
+            this.$refs['disMap'].$refs['section'].scrollTo(scrollLeft, scrollTop);
+            this.onDraw();
         },
         // 滚动条偏移量赋值
         setScrollTopAndScrollLeft() {
-            const dom = this.$refs['disMapChild'].$refs['section'];
+            const dom = this.$refs['disMap'].$refs['section'];
             this.map.scrollLeft = dom.scrollLeft;
             this.map.scrollTop = dom.scrollTop;
         },
         // 信息栏更新
         updateForm(value) {
-            const operation = this.$refs['operationChild'];
+            const operation = this.$refs['operation'];
             operation.formMsg.deviceNum = value['deviceNum'];
             operation.formMsg.stationNum = value['stationNum'];
             operation.formLabel.deviceNum = value['deviceNum'];
@@ -233,7 +222,7 @@ export default {
         },
         // 信息栏清除
         clearForm() {
-            const operation = this.$refs['operationChild'];
+            const operation = this.$refs['operation'];
             operation.formMsg.deviceNum = '';
             operation.formMsg.stationNum = '';
             operation.formLabel.deviceNum = '';
@@ -257,8 +246,9 @@ export default {
         toProblems() {
             this.isMapPage = false;
         },
+        // 问题点信息栏
         setProblemCount() {
-            const operation = this.$refs['operationChild'];
+            const operation = this.$refs['operation'];
             if (this.$store.state.choose != '') {
                 const arr = this.$store.state.choose.split('+');
                 const deviceNum = arr[0];

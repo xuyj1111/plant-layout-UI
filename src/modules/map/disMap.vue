@@ -21,24 +21,33 @@ export default {
         this.$refs.mapDom.addEventListener('click', function (e) {
             that.setChoose({ x: e.offsetX, y: e.offsetY });
         });
-        // 监听choose变量
-        this.$watch("$store.state.choose", (newVal, oldVal) => {
-            if (newVal == '') {
-                console.log('取消选中');
-            } else {
-                console.log(`选中的设备值+工位号: ${newVal}`);
-            }
-            // 触发父vue执行方法
-            this.$emit('onDraw');
-            this.$emit('setProblemCount');
-        });
     },
     computed: {
         ...mapState(['map'])
     },
     methods: {
-        init() {
-            this.setPlantData();
+        drawMap(value, key, multiple) {
+            const mapContext = this.$refs['mapDom'].getContext("2d");
+            mapContext.beginPath();
+            mapContext.rect(
+                value["coordX"] * multiple,
+                value["coordY"] * multiple,
+                value["width"] * multiple,
+                value["height"] * multiple
+            );
+            if (key == this.$store.state.choose) {
+                // 选中设备
+                mapContext.fillStyle = "red";
+                mapContext.fill();
+            } else {
+                //传送带
+                if (value["conveyor"] == "true") {
+                    mapContext.fillStyle = "#a8a6a5";
+                    mapContext.fill();
+                }
+                // 其他设备
+                mapContext.stroke();
+            }
         },
         // 赋值给choose，表示选中设备
         setChoose(p) {
@@ -69,10 +78,10 @@ export default {
             }
         },
         // 获取地图数据，即赋值给 this.$store.state.shapes
-        setPlantData() {
+        async setPlantData() {
             const that = this;
             const shapes = this.$store.state.shapes;
-            this.$axiosInstance.get("/plant", {
+            await this.$axiosInstance.get("/plant", {
                 params: {
                     name: this.$store.state.plant
                 }

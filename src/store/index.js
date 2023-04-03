@@ -1,3 +1,5 @@
+import { parseStringStyle } from '@vue/shared'
+import { parse } from 'querystring'
 import { createStore } from 'vuex'
 
 export default createStore({
@@ -38,5 +40,23 @@ export default createStore({
             checkOffsetX: 0,
             checkOffsetY: 0
         }
-    }
+    },
+    mutations: {
+        // 保存到 sessionStorage 中
+        saveStateToStorage(state) {
+            sessionStorage.setItem('choose', state.choose)
+        },
+        // 从 sessionStorage 中恢复
+        restoreStateFromStorage(state) {
+            state.choose = sessionStorage.getItem('choose');
+        }
+    },
+    // 在页面关闭或刷新前保存 state 的状态
+    plugins: [
+        store => {
+            window.addEventListener('beforeunload', () => {
+                store.commit('saveStateToStorage')
+            })
+        }
+    ]
 })

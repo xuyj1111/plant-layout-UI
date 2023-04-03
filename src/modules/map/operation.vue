@@ -88,7 +88,7 @@
             <span>&nbsp;&nbsp;{{ map.per }}%</span>
         </div>
         <!-- 缩略图 -->
-        <canvas id='canvas' ref="mapDom" width="203" height="133" @mousedown="startDraging" @mouseup="stopDraging"
+        <canvas id='canvas' ref="thumbnailDom" width="203" height="133" @mousedown="startDraging" @mouseup="stopDraging"
             @mousemove="draging">
         </canvas>
     </section>
@@ -200,9 +200,32 @@ export default {
                 this.$emit('onBiggerOrSmaller');
             }
         },
+        drawThumbnail(value, key) {
+            const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
+            thumbnailContext.beginPath();
+            thumbnailContext.rect(
+                value["coordX"] * 0.35,
+                value["coordY"] * 0.35,
+                value["width"] * 0.35,
+                value["height"] * 0.35
+            );
+            if (key == this.$store.state.choose) {
+                // 选中设备
+                thumbnailContext.fillStyle = "red";
+                thumbnailContext.fill();
+            } else {
+                //传送带
+                if (value["conveyor"] == "true") {
+                    thumbnailContext.fillStyle = "#a8a6a5";
+                    thumbnailContext.fill();
+                }
+                // 其他设备
+                thumbnailContext.stroke();
+            }
+        },
         // 开始拖动
         startDraging(event) {
-            const rect = this.$refs['mapDom'].getBoundingClientRect();
+            const rect = this.$refs['thumbnailDom'].getBoundingClientRect();
             this.rectLeft = rect.left;
             this.rectTop = rect.top;
             this.firstClickX = event.clientX - this.rectLeft;
