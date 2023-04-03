@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
-import LoginView from '../modules/login/index.vue'
-import MapView from '../modules/map/index.vue'
-import NotFoundView from '../modules/NotFound.vue'
+import LoginView from './modules/login.vue'
+import MapView from './modules/map/index.vue'
+import NotFoundView from './modules/NotFound.vue'
 
 // 配置信息中需要页面的相关配置
 const routes = [

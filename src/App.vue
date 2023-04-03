@@ -4,7 +4,7 @@
 
 <script>
 import Map from './modules/map/index.vue';
-import Login from './modules/login/index.vue';
+import Login from './modules/login.vue';
 
 export default {
   name: 'app',
