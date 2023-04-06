@@ -1,6 +1,6 @@
 <template>
     <body>
-        <Menu ref="menu" />
+        <Menu ref="menu" @toMap="toMap"/>
         <!-- 
             @onDraw: 画地图
             @updateForm: 信息栏更新值
@@ -16,8 +16,8 @@
             @clearForm: 信息栏清除
         -->
         <Operation v-if="isMapPage" ref="operation" @onBiggerOrSmaller="init" @onDrag="draging"
-            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="onDraw" @onSearch="search" @clearForm="clearForm"
-            @toProblems="toProblems" />
+            @setScrollTopAndScrollLeft="setScrollTopAndScrollLeft" @onDraw="onDraw" @onSearch="search"
+            @clearForm="clearForm" @toProblems="toProblems" />
 
         <Problems v-else @toMap="toMap"></Problems>
     </body>
@@ -56,21 +56,28 @@ export default {
      * 无法访问 DOM；
      * 
      * 用于数据初始化、路由跳转；
+     * 
+     * isMapPage不能在mounted初始化，因为需要isMapPage来选择渲染
      */
     created() {
         // 若路径是'/map/assy/problems'，则arrStr = ["", "map", "assy", "problems"]
         const arrStr = this.$route.path.split('/');
         if (plants.has(arrStr[2])) {
             this.$store.state.plant = arrStr[2];
+            // 初始化 全局变量
+            this.$store.commit('restoreStateFromStorage');
             // 初始化 isMapPage
             if (arrStr.length == 4) {
-                this.isMapPage = false;
+                if (this.$store.state.choose == '') {
+                    this.isMapPage = true;
+                    this.$router.push('/map/' + this.$store.state.plant);
+                } else {
+                    this.isMapPage = false;
+                }
             } else {
                 this.isMapPage = true;
                 this.$store.state.choose = '';
             }
-            // 初始化 全局变量
-            this.$store.commit('restoreStateFromStorage');
         } else {
             this.$router.push('/404');
         }
@@ -85,7 +92,6 @@ export default {
         // 地图页的初始化
         if (this.isMapPage) {
             this.init();
-
             // 监听滚动条
             const disMap = this.$refs.disMap;
             disMap.$refs['section'].addEventListener(
@@ -96,21 +102,21 @@ export default {
                     console.log('滚动条拖动结束')
                 }, 200)
             );
-            // 监听浏览器页面大小变化
-            window.addEventListener('resize', () => {
-                this.init();
-            });
-            // 监听choose变量
-            this.$watch("$store.state.choose", (newVal, oldVal) => {
-                if (newVal == '') {
-                    console.log('未选中设备');
-                } else {
-                    console.log(`选中的设备值+工位号: ${newVal}`);
-                }
-                this.onDraw();
-                this.setProblemCount();
-            });
         }
+        // 监听浏览器页面大小变化
+        window.addEventListener('resize', () => {
+            this.init();
+        });
+        // 监听choose变量
+        this.$watch("$store.state.choose", (newVal, oldVal) => {
+            if (newVal == '') {
+                console.log('未选中设备');
+            } else {
+                console.log(`选中的设备值+工位号: ${newVal}`);
+            }
+            this.onDraw();
+            this.setProblemCount();
+        });
         // 监听isMapPage变量
         this.$watch("isMapPage", (newVal, oldVal) => {
             this.$nextTick(function () {
@@ -239,12 +245,11 @@ export default {
             this.$store.state.choose = shape['deviceNum'] + '+' + shape['stationNum'];
             this.updateForm(shape);
         },
-        toMap() {
-            this.isMapPage = true;
-            // this.init();
-        },
         toProblems() {
             this.isMapPage = false;
+        },
+        toMap() {
+            this.isMapPage = true;
         },
         // 问题点信息栏
         setProblemCount() {

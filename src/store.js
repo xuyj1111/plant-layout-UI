@@ -2,6 +2,12 @@ import { parseStringStyle } from '@vue/shared'
 import { parse } from 'querystring'
 import { createStore } from 'vuex'
 
+/**
+ * 全局变量
+ * state：存储状态
+ * mutations：修改状态
+ * 
+ */
 export default createStore({
     state: {
         // 登陆用户

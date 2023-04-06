@@ -29,21 +29,3 @@ app.use(Vuex);
 app.use(store);
 
 app.mount('#app');
-
-// 每次跳转网址前执行
-router.beforeEach((to, from, next) => {
-    let isLogin = sessionStorage.getItem('isLogin');
-    if (to.path == '/logout') {
-        sessionStorage.clear();
-        next({ path: '/login' });
-    } else if (to.path == '/login') {
-        if (isLogin != null) {
-            next({ path: '/map' });
-        }
-    } else if(to.path == '/map') {
-        next({ path: '/map/' + store.state.plant });
-    } else if (!to.path.startsWith('/api') && isLogin == null) {
-        next({ path: '/login' });
-    }
-    next();
-})

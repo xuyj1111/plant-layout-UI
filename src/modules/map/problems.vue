@@ -159,7 +159,6 @@ export default {
         },
         // 跳转到地图页
         toMap() {
-            // 告诉父vue
             this.$emit('toMap');
             this.$router.push(this.$route.path.replace(new RegExp("/problems$"), ""));
         }
