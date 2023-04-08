@@ -365,7 +365,9 @@ export default {
                             height: this.formLabel.height,
                             conveyor: this.formLabel.conveyor
                         });
-                        this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                        this.updatePlantData().then(data => {
+                            this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                        })
                     } else {
                         this.$store.state.shapes.set(this.$store.state.choose, {
                             deviceNum: this.formLabel.deviceNum,
@@ -378,9 +380,10 @@ export default {
                         });
                         // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
                         // 只有修改操作要手动刷新地图
-                        this.$emit('init');
+                        this.updatePlantData().then(data => {
+                            this.$emit('init');
+                        })
                     }
-                    this.updatePlantData();
                 }
             });
         },
@@ -390,6 +393,15 @@ export default {
                 if (valid) {
                     if (this.$store.state.choose == '') {
                         window.alert('未选中设备，无法删除！');
+                        this.formMsg.deviceNum = '';
+                        this.formMsg.stationNum = '';
+                        this.formLabel.deviceNum = '';
+                        this.formLabel.stationNum = '';
+                        this.formLabel.coordX = '';
+                        this.formLabel.coordY = '';
+                        this.formLabel.width = '';
+                        this.formLabel.height = '';
+                        this.formLabel.conveyor = '';
                         return;
                     } else {
                         if (!confirm('你确定要删除此设备吗？')) {
@@ -398,32 +410,35 @@ export default {
                         }
                     }
                     this.$store.state.shapes.delete(this.$store.state.choose);
-                    this.$store.state.choose = '';
-                    this.formMsg.deviceNum = '';
-                    this.formMsg.stationNum = '';
-                    this.formLabel.deviceNum = '';
-                    this.formLabel.stationNum = '';
-                    this.formLabel.coordX = '';
-                    this.formLabel.coordY = '';
-                    this.formLabel.width = '';
-                    this.formLabel.height = '';
-                    this.formLabel.conveyor = '';
-                    this.updatePlantData();
+                    this.updatePlantData().then(data => {
+                        this.$store.state.choose = '';
+                        this.formMsg.deviceNum = '';
+                        this.formMsg.stationNum = '';
+                        this.formLabel.deviceNum = '';
+                        this.formLabel.stationNum = '';
+                        this.formLabel.coordX = '';
+                        this.formLabel.coordY = '';
+                        this.formLabel.width = '';
+                        this.formLabel.height = '';
+                        this.formLabel.conveyor = '';
+                    })
                 }
             });
         },
         // 更新地图数据
         updatePlantData() {
-            this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(this.$store.state.shapes.values()))), {
-                params: {
-                    name: this.$store.state.plant
-                }
-            }).then(function (response) {
-                console.log('地图数据更新成功！');
-            }).catch(function (error) {
-                console.log(error);
-                window.alert('更新地图错误！请检查！');
-                return false;
+            return new Promise((resolve, reject) => {
+                this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(this.$store.state.shapes.values()))), {
+                    params: {
+                        name: this.$store.state.plant
+                    }
+                }).then(function (response) {
+                    console.log('地图数据更新成功！');
+                    resolve(response);
+                }).catch(function (error) {
+                    window.alert('更新地图错误！请检查！');
+                    reject(error);
+                })
             })
         },
         handleSearch() {
