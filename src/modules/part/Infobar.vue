@@ -4,7 +4,7 @@
         <!-- 搜索框 -->
         <div id="search">
             <el-input v-model.trim="search" class="w-50 m-2"
-                :placeholder="this.$store.state.plant == 'assy' ? '请输入工位号' : '请输入设备编号'" @keyup.enter="handleSearch"
+                :placeholder="this.$store.state.plant == 'assy' ? '请输入岗位号' : '请输入设备编号'" @keyup.enter="handleSearch"
                 @blur="handleSearch">
                 <template #prefix>
                     <el-icon class="el-input__icon">
@@ -31,6 +31,8 @@
                 }}</el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
                     <span style="color: red">{{ formMsg.problem.needHelpAndUnfinished }}</span>
+                    <span> / </span>
+                    <span style="color: #EEB422">{{ formMsg.problem.needHelpAndReview }}</span>
                     <span> / </span>
                     <span style="color: green">{{ formMsg.problem.needHelpAndfinished }}</span>
                 </el-descriptions-item>
@@ -121,6 +123,8 @@ export default {
                     count: 0,
                     // 需要协助 未完成数量
                     needHelpAndUnfinished: 0,
+                    // 需要协助 审核数量
+                    needHelpAndReview: 0,
                     // 需要协助 完成数量
                     needHelpAndfinished: 0,
                     // 不需要协助 未完成数量
@@ -312,9 +316,9 @@ export default {
                             // 否 跳出
                             return;
                         }
-                        // 判断设备编号 + 工位号是否存在
+                        // 判断设备编号 + 岗位号是否存在
                         if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
-                            window.alert('该设备编号 + 工位号已存在！操作失败！');
+                            window.alert('该设备编号 + 岗位号已存在！操作失败！');
                             return;
                         }
                     } else {
@@ -443,8 +447,8 @@ export default {
         },
         handleSearch() {
             if (this.$store.state.plant == 'assy') {
-                console.log(`搜索工位号: ${this.search}`);
-                // 创建一个对象，key = 工位号，value = 设备编号+工位号
+                console.log(`搜索岗位号: ${this.search}`);
+                // 创建一个对象，key = 岗位号，value = 设备编号+岗位号
                 const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
                     acc[cur.split('+').pop()] = cur;
                     return acc;
@@ -459,7 +463,7 @@ export default {
                 }
             } else {
                 console.log(`搜索设备编号: ${this.search}`);
-                // 创建一个对象，key = 设备编号+工位号，value = 设备编号
+                // 创建一个对象，key = 设备编号+岗位号，value = 设备编号
                 // 设备编号可重复，所以作为value
                 const values = Array.from(this.$store.state.shapes.keys()).reduce((acc, cur, index) => {
                     const arr = cur.split('+');
@@ -495,6 +499,9 @@ export default {
                 this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
                     this.formMsg.problem.needHelpAndUnfinished = data;
                 })
+                this.execCountRequest(deviceNum, stationNum, true, 'review').then(data => {
+                    this.formMsg.problem.needHelpAndReview = data;
+                })
                 this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
                     this.formMsg.problem.needHelpAndfinished = data;
                 })
@@ -507,6 +514,7 @@ export default {
             } else {
                 this.formMsg.problem.count = 0;
                 this.formMsg.problem.needHelpAndUnfinished = 0;
+                this.formMsg.problem.needHelpAndReview = 0;
                 this.formMsg.problem.needHelpAndfinished = 0;
                 this.formMsg.problem.noHelpAndUnfinished = 0;
                 this.formMsg.problem.noHelpAndfinished = 0;

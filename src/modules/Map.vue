@@ -75,7 +75,7 @@ export default {
             if (newVal == '') {
                 console.log('未选中设备');
             } else {
-                console.log(`选中的设备值+工位号: ${newVal}`);
+                console.log(`选中的设备值+岗位号: ${newVal}`);
             }
             this.init();
             this.$store.commit('saveStateToStorage');

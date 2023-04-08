@@ -5,7 +5,7 @@
                 <el-link :underline="false" type="primary" id="link" @click="toMap">&lt;&nbsp;返回</el-link>
             </div>
             <span class="element">{{ isEmpty(deviceNum) ? '' : `设备编号：${deviceNum}` }}</span>
-            <span class="element">{{ isEmpty(stationNum) ? '' : `工位号：${stationNum}` }}</span>
+            <span class="element">{{ isEmpty(stationNum) ? '' : `岗位号：${stationNum}` }}</span>
         </div>
 
         <div id="operation">
@@ -23,7 +23,7 @@
 
             <!-- 过滤选项 -->
             <span class="filter">
-                <el-select v-model="status" placeholder="所有问题点" @change="handleFilter">
+                <el-select v-model="status" placeholder="所有问题点">
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
                 </el-select>
@@ -43,17 +43,22 @@
                 <el-table-column prop="isNeedHelp" label="是否需要其他部门协助" width="250">
                 </el-table-column>
                 <el-table-column prop="picture" label="图片" width="180">
+                    <template v-slot="{ row }">
+                        <el-image style="width: 100px; height: 100px" :src="row.picture" :fit='"scale-down"'></el-image>
+                    </template>
                 </el-table-column>
                 <el-table-column prop="status" label="状态" fixed="right">
+                    <template v-slot="{ row }">
+                        <el-button v-if="row.status == '已完成'" type="success" disabled
+                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
+                        <el-button v-else-if="row.status == '审核中'" type="warning"
+                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
+                        <el-button v-else-if="row.status == '未完成'" type="danger"
+                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
+                    </template>
                 </el-table-column>
             </el-table>
         </div>
-
-        <!-- <div id="page">
-            <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                :current-page.sync="currentPage3" :page-size="5" layout="prev, pager, next, jumper" :total="500">
-            </el-pagination>
-        </div> -->
 
         <div id="page">
             <span class="countTxt">共{{ count }}条&nbsp</span>
@@ -102,9 +107,51 @@ export default {
         const arr = this.$store.state.choose.split('+');
         this.deviceNum = arr[0];
         this.stationNum = arr[1];
-
+        // 监听status变量
+        this.$watch("status", (newVal, oldVal) => {
+            this.tableData = [];
+            this.setProblemsCount();
+            this.setTableData();
+        });
+        // 监听page变量
         this.$watch("page", (newVal, oldVal) => {
             this.tableData = [];
+            this.setTableData();
+        });
+        this.setProblemsCount();
+        this.setTableData();
+    },
+    methods: {
+        // 跳转到地图页
+        toMap() {
+            this.$emit('toMap');
+            this.$router.push(this.$route.path.replace(new RegExp("/problems$"), ""));
+        },
+        /**
+         * 问题点count赋值
+         */
+        setProblemsCount() {
+            new Promise((resolve, reject) => {
+                this.$axiosInstance.get("/plant/problems/count", {
+                    params: {
+                        plant: this.$store.state.plant,
+                        deviceNum: this.deviceNum,
+                        stationNum: this.stationNum,
+                        status: this.status == 'all' ? null : this.status
+                    }
+                }).then(function (response) {
+                    resolve(response.data['count']);
+                }).catch(function (error) {
+                    reject(error);
+                })
+            }).then(data => {
+                this.count = data;
+            })
+        },
+        /**
+         * 问题点数据赋值
+         */
+        setTableData() {
             new Promise((resolve, reject) => {
                 this.$axiosInstance.get("/plant/problems", {
                     params: {
@@ -123,65 +170,40 @@ export default {
             }).then(data => {
                 this.tableData = data;
             })
-        });
-
-        new Promise((resolve, reject) => {
-            this.$axiosInstance.get("/plant/problems/count", {
-                params: {
-                    plant: this.$store.state.plant,
-                    deviceNum: this.deviceNum,
-                    stationNum: this.stationNum,
-                    status: this.status == 'all' ? null : this.status
-                }
-            }).then(function (response) {
-                resolve(response.data['count']);
-            }).catch(function (error) {
-                reject(error);
+        },
+        // page赋值 
+        setPage(val) {
+            this.page = val - 1;
+        },
+        // 搜索框搜索
+        handleSearch() {
+            console.log(`search: ${this.search}`);
+            new Promise((resolve, reject) => {
+                this.$axiosInstance.get("/plant/problems", {
+                    params: {
+                        plant: this.$store.state.plant,
+                        deviceNum: this.deviceNum,
+                        stationNum: this.stationNum,
+                        status: this.status == 'all' ? null : this.status,
+                        page: this.page,
+                        size: 5,
+                        search: this.isEmpty(this.search) ? null : this.search
+                    }
+                }).then(function (response) {
+                    resolve(response.data);
+                }).catch(function (error) {
+                    reject(error);
+                })
+            }).then(data => {
+                this.tableData = data;
             })
-        }).then(data => {
-            this.count = data;
-        })
-
-        new Promise((resolve, reject) => {
-            this.$axiosInstance.get("/plant/problems", {
-                params: {
-                    plant: this.$store.state.plant,
-                    deviceNum: this.deviceNum,
-                    stationNum: this.stationNum,
-                    status: this.status == 'all' ? null : this.status,
-                    page: this.page,
-                    size: 5
-                }
-            }).then(function (response) {
-                resolve(response.data);
-            }).catch(function (error) {
-                reject(error);
-            })
-        }).then(data => {
-            this.tableData = data;
-        })
-    },
-    methods: {
+        },
         // 判断字符串是否为空
         isEmpty(str) {
             if (str == null || str.trim() == "") {
                 return true;
             }
             return false;
-        },
-        handleSearch() {
-
-        },
-        handleFilter() {
-            console.log(this.status);
-        },
-        // 跳转到地图页
-        toMap() {
-            this.$emit('toMap');
-            this.$router.push(this.$route.path.replace(new RegExp("/problems$"), ""));
-        },
-        setPage(val) {
-            this.page = val - 1;
         }
     }
 }
