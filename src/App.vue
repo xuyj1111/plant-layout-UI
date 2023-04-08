@@ -3,14 +3,12 @@
 </template>
 
 <script>
-import Map from './modules/map/index.vue';
-import Login from './modules/login.vue';
+import Map from './modules/Map.vue';
+import Login from './modules/Login.vue';
 
 export default {
   name: 'app',
   components: {
-    Map,
-    Login
   },
   data() {
     return {

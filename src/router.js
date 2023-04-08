@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router"
-import LoginView from './modules/login.vue'
-import MapView from './modules/map/index.vue'
-import NotFoundView from './modules/NotFound.vue'
+import Login from './modules/Login.vue'
+import Map from './modules/Map.vue'
+import NotFound from './modules/NotFound.vue'
+import Problems from './modules/Problems.vue'
 import store from './store'
 
 // 配置信息中需要页面的相关配置
@@ -9,21 +10,21 @@ const routes = [
     {
         path: '/login',
         name: 'login',
-        component: LoginView,
+        component: Login,
         alias: '/logout'
     },
     {
         path: '/map',
-        component: MapView
+        component: Map
     },
     {
         path: '/map/:plant/problems',
-        component: MapView
+        component: Problems
     },
     {
         path: '/map/:plant',
         name: 'map',
-        component: MapView
+        component: Map
     },
     {
         path: '/',
@@ -32,7 +33,7 @@ const routes = [
     {
         path: '/404',
         name: '404',
-        component: NotFoundView
+        component: NotFound
     },
     {
         path: '/:catchAll(.*)',
@@ -67,7 +68,7 @@ router.beforeEach((to, from, next) => {
         if (isLogin != null) {
             next({ path: '/map' });
         }
-    } else if(to.path == '/map') {
+    } else if (to.path == '/map') {
         next({ path: '/map/' + store.state.plant });
     } else if (!to.path.startsWith('/api') && isLogin == null) {
         next({ path: '/login' });

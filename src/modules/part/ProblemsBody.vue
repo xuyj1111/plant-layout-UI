@@ -23,7 +23,7 @@
 
             <!-- 过滤选项 -->
             <span class="filter">
-                <el-select v-model="optionValue" placeholder="所有问题点" @change="handleFilter">
+                <el-select v-model="status" placeholder="所有问题点" @change="handleFilter">
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
                 </el-select>
@@ -36,9 +36,9 @@
                 </el-table-column>
                 <el-table-column prop="name" label="提交人" width="120">
                 </el-table-column>
-                <el-table-column prop="date_created" label="提交日期" width="180">
+                <el-table-column prop="dateCreated" label="提交日期" width="180">
                 </el-table-column>
-                <el-table-column prop="describe" label="问题点描述" width="180">
+                <el-table-column prop="detail" label="问题点描述" width="180">
                 </el-table-column>
                 <el-table-column prop="isNeedHelp" label="是否需要其他部门协助" width="250">
                 </el-table-column>
@@ -49,12 +49,18 @@
             </el-table>
         </div>
 
-        <div id="page">
+        <!-- <div id="page">
             <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
                 :current-page.sync="currentPage3" :page-size="5" layout="prev, pager, next, jumper" :total="500">
             </el-pagination>
-        </div>
+        </div> -->
 
+        <div id="page">
+            <span class="countTxt">共{{ count }}条&nbsp</span>
+            <el-pagination background @current-change="setPage" :page-size="5" layout="prev, pager, next, jumper"
+                :total=count>
+            </el-pagination>
+        </div>
 
     </section>
 </template>
@@ -85,56 +91,10 @@ export default {
                 value: 'finished',
                 label: '已完成'
             }],
-            optionValue: 'all',
-            tableData: [{
-                date: '2016-05-02',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-            }, {
-                date: '2016-05-04',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1517 弄'
-            }, {
-                date: '2016-05-01',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1519 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }, {
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1516 弄'
-            }]
+            status: 'all',
+            tableData: [],
+            count: 0,
+            page: 0
         }
     },
     mounted() {
@@ -142,6 +102,64 @@ export default {
         const arr = this.$store.state.choose.split('+');
         this.deviceNum = arr[0];
         this.stationNum = arr[1];
+
+        this.$watch("page", (newVal, oldVal) => {
+            this.tableData = [];
+            new Promise((resolve, reject) => {
+                this.$axiosInstance.get("/plant/problems", {
+                    params: {
+                        plant: this.$store.state.plant,
+                        deviceNum: this.deviceNum,
+                        stationNum: this.stationNum,
+                        status: this.status == 'all' ? null : this.status,
+                        page: this.page,
+                        size: 5
+                    }
+                }).then(function (response) {
+                    resolve(response.data);
+                }).catch(function (error) {
+                    reject(error);
+                })
+            }).then(data => {
+                this.tableData = data;
+            })
+        });
+
+        new Promise((resolve, reject) => {
+            this.$axiosInstance.get("/plant/problems/count", {
+                params: {
+                    plant: this.$store.state.plant,
+                    deviceNum: this.deviceNum,
+                    stationNum: this.stationNum,
+                    status: this.status == 'all' ? null : this.status
+                }
+            }).then(function (response) {
+                resolve(response.data['count']);
+            }).catch(function (error) {
+                reject(error);
+            })
+        }).then(data => {
+            this.count = data;
+        })
+
+        new Promise((resolve, reject) => {
+            this.$axiosInstance.get("/plant/problems", {
+                params: {
+                    plant: this.$store.state.plant,
+                    deviceNum: this.deviceNum,
+                    stationNum: this.stationNum,
+                    status: this.status == 'all' ? null : this.status,
+                    page: this.page,
+                    size: 5
+                }
+            }).then(function (response) {
+                resolve(response.data);
+            }).catch(function (error) {
+                reject(error);
+            })
+        }).then(data => {
+            this.tableData = data;
+        })
     },
     methods: {
         // 判断字符串是否为空
@@ -155,12 +173,15 @@ export default {
 
         },
         handleFilter() {
-            console.log(this.optionValue);
+            console.log(this.status);
         },
         // 跳转到地图页
         toMap() {
             this.$emit('toMap');
             this.$router.push(this.$route.path.replace(new RegExp("/problems$"), ""));
+        },
+        setPage(val) {
+            this.page = val - 1;
         }
     }
 }
@@ -207,9 +228,9 @@ export default {
 }
 
 .body #page {
-    position: relative;
-    left: calc(100% - 580px);
-    width: 580px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 /* 改变分页控件的颜色 */

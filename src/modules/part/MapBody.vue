@@ -1,7 +1,7 @@
 <template>
     <!-- 显示地图 -->
     <section ref="section" id="main">
-        <canvas ref="mapDom" :width="map.width" :height="map.height"> </canvas>
+        <canvas ref="map" :width="map.width" :height="map.height"> </canvas>
     </section>
 </template>
 
@@ -9,52 +9,20 @@
 import { mapState } from 'vuex'
 
 export default {
-    name: 'DisMap',
+    name: 'MapBody',
     data() {
         return {
         }
     },
     mounted() {
-        console.log('跳转到地图页');
+        console.log('mapBody.vue mounted......');
         var that = this;
         // 地图中的点击事件，以选中设备
-        this.$refs.mapDom.addEventListener('click', function (e) {
-            that.setChoose({ x: e.offsetX, y: e.offsetY });
-        });
-    },
-    computed: {
-        ...mapState(['map'])
-    },
-    methods: {
-        drawMap(value, key, multiple) {
-            const mapContext = this.$refs['mapDom'].getContext("2d");
-            mapContext.beginPath();
-            mapContext.rect(
-                value["coordX"] * multiple,
-                value["coordY"] * multiple,
-                value["width"] * multiple,
-                value["height"] * multiple
-            );
-            if (key == this.$store.state.choose) {
-                // 选中设备
-                mapContext.fillStyle = "red";
-                mapContext.fill();
-            } else {
-                //传送带
-                if (value["conveyor"] == "true") {
-                    mapContext.fillStyle = "#a8a6a5";
-                    mapContext.fill();
-                }
-                // 其他设备
-                mapContext.stroke();
-            }
-        },
-        // 赋值给choose，表示选中设备
-        setChoose(p) {
-            const mapContext = this.$refs['mapDom'].getContext("2d");
-            const multiple = (1.0 + 0.05 * this.map.per);
+        this.$refs['map'].addEventListener('click', function (e) {
+            const mapContext = that.$refs['map'].getContext("2d");
+            const multiple = (1.0 + 0.05 * that.map.per);
             // 用foreach，无法使用break或return跳出循环，因此使用for
-            for (let [key, value] of this.$store.state.shapes) {
+            for (let [key, value] of that.$store.state.shapes) {
                 mapContext.beginPath();
                 mapContext.rect(
                     value["coordX"] * multiple,
@@ -62,22 +30,58 @@ export default {
                     value["width"] * multiple,
                     value["height"] * multiple
                 );
-                if (mapContext.isPointInPath(p.x, p.y)) {
-                    this.$store.state.choose = key;
-                    // 信息栏更新
-                    this.$emit('updateForm', value);
+                if (mapContext.isPointInPath(e.offsetX, e.offsetY)) {
+                    that.$store.state.choose = key;
                     break;
                 } else {
-                    this.$store.state.choose = '';
+                    that.$store.state.choose = '';
                 }
             };
-            // 取消选中
-            if (this.$store.state.choose == '') {
-                // 清除信息栏
-                this.$emit('clearForm');
+        });
+        // 监听滚动条
+        this.$refs['section'].addEventListener(
+            "scroll",
+            this.throttle(() => {
+                this.$emit('onScrollBar');
+                console.log('滚动条拖动结束')
+            }, 200)
+        );
+    },
+    computed: {
+        ...mapState(['map'])
+    },
+    methods: {
+        /**
+         * 画地图
+         * Map.vue调用
+         */
+        drawMap(shape, key, multiple) {
+            const mapContext = this.$refs['map'].getContext("2d");
+            mapContext.beginPath();
+            mapContext.rect(
+                shape["coordX"] * multiple,
+                shape["coordY"] * multiple,
+                shape["width"] * multiple,
+                shape["height"] * multiple
+            );
+            if (key == this.$store.state.choose) {
+                // 选中设备
+                mapContext.fillStyle = "red";
+                mapContext.fill();
+            } else {
+                //传送带
+                if (shape["conveyor"] == "true") {
+                    mapContext.fillStyle = "#a8a6a5";
+                    mapContext.fill();
+                }
+                // 其他设备
+                mapContext.stroke();
             }
         },
-        // 获取地图数据，即赋值给 this.$store.state.shapes
+        /**
+         * this.$store.state.shapes赋值
+         * Map.vue调用
+         */
         async setPlantData() {
             const that = this;
             const shapes = this.$store.state.shapes;
@@ -95,9 +99,6 @@ export default {
                         shapes.set(jsonObj[i]['deviceNum'] + '+' + jsonObj[i]['stationNum'], jsonObj[i]);
                     }
                 }
-                console.log(`地图切换完成, 共${shapes.size}个设备`);
-                // 触发父vue执行方法
-                that.$emit('onDraw');
             }).catch(function (error) {
                 console.log(error);
                 window.alert("切换地图失败！请检查！");
@@ -147,6 +148,22 @@ export default {
                 }
                 return true;
             }
+        },
+        /**
+         * 辅助实现监听“滚动结束”事件
+         * 设置一个定时器，滚动时会执行该方法，即clearTimeout；
+         * 若定时器到达，则表示不再滚动，即触发事件；
+         */
+        throttle(fn, delay) {
+            let timer = null;
+            return function () {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    fn.apply(context, args);
+                }, delay);
+            };
         },
         // 判断字符串是否为空
         isEmpty(str) {

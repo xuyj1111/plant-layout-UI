@@ -51,7 +51,9 @@ export default {
                     }).then(function (response) {
                         that.$store.state.user = that.form.name;
                         that.$store.state.role = response.data;
+                        that.$store.state.choose = '';
                         sessionStorage.setItem('isLogin', 'true');
+                        that.$store.commit('saveStateToStorage');
                         that.$router.push('/map');
                     }).catch(function (error) {
                         console.log(error);

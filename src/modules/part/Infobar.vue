@@ -96,7 +96,6 @@
 
 <script>
 import { Search } from '@element-plus/icons-vue'
-import { useWindowScroll } from '@vueuse/core';
 import { mapState } from 'vuex'
 
 export default {
@@ -186,8 +185,7 @@ export default {
                 this.map.width += 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
                 this.map.height += 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
                 this.map.per += 10;
-                // 触发父vue执行方法
-                this.$emit('onBiggerOrSmaller');
+                this.$emit('init');
             }
         },
         // 缩小地图
@@ -196,10 +194,10 @@ export default {
                 this.map.width -= 10 * ((this.map.maxWidth - this.map.minWidth) / 100);
                 this.map.height -= 10 * ((this.map.maxHeight - this.map.minHeight) / 100);
                 this.map.per -= 10;
-                // 触发父vue执行方法
-                this.$emit('onBiggerOrSmaller');
+                this.$emit('init');
             }
         },
+        // 画缩略图
         drawThumbnail(value, key) {
             const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
             thumbnailContext.beginPath();
@@ -223,6 +221,27 @@ export default {
                 thumbnailContext.stroke();
             }
         },
+        // 画缩略图的选中框
+        drawThumbnailCheck(widthPer, heightPer, offsetX, offsetY) {
+            const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
+            // 赋值给全局变量
+            this.thumbnail.checkOffsetX = this.thumbnail.width * offsetX;
+            this.thumbnail.checkOffsetY = this.thumbnail.height * offsetY;
+            this.thumbnail.checkWidth = this.thumbnail.width * ((widthPer > 1) ? 1 : widthPer);
+            this.thumbnail.checkHeight = this.thumbnail.height * ((heightPer > 1) ? 1 : heightPer);
+            // 画图
+            thumbnailContext.strokeStyle = "#00ffff";
+            thumbnailContext.beginPath();
+            thumbnailContext.lineWidth = 2;
+            thumbnailContext.rect(
+                this.thumbnail.checkOffsetX,
+                this.thumbnail.checkOffsetY,
+                this.thumbnail.checkWidth,
+                this.thumbnail.checkHeight
+            );
+            thumbnailContext.stroke();
+            thumbnailContext.lineWidth = 1;
+        },
         // 开始拖动
         startDraging(event) {
             const rect = this.$refs['thumbnailDom'].getBoundingClientRect();
@@ -238,7 +257,7 @@ export default {
             this.rectTop = 0;
             this.firstClickX = 0;
             this.firstClickY = 0;
-            this.$emit('setScrollTopAndScrollLeft');
+            this.$emit('init');
             console.log('over drag');
         },
         // 拖动的具体实现
@@ -256,8 +275,32 @@ export default {
                     const offsetX = ((x - this.firstClickX) / this.thumbnail.width) * this.map.width;
                     const offsetY = ((y - this.firstClickY) / this.thumbnail.height) * this.map.height;
                     // 当前滚动条偏移量 + 地图偏移量 = 目标滚动条偏移量
-                    this.$emit('onDrag', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
+                    this.$emit('onDraging', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
                 }
+            }
+        },
+        updateForm() {
+            const shape = this.$store.state.shapes.get(this.$store.state.choose);
+            if (shape == null) {
+                this.formMsg.deviceNum = '';
+                this.formMsg.stationNum = '';
+                this.formLabel.deviceNum = '';
+                this.formLabel.stationNum = '';
+                this.formLabel.coordX = '';
+                this.formLabel.coordY = '';
+                this.formLabel.width = '';
+                this.formLabel.height = '';
+                this.formLabel.conveyor = '';
+            } else {
+                this.formMsg.deviceNum = shape['deviceNum'];
+                this.formMsg.stationNum = shape['stationNum'];
+                this.formLabel.deviceNum = shape['deviceNum'];
+                this.formLabel.stationNum = shape['stationNum'];
+                this.formLabel.coordX = shape['coordX'];
+                this.formLabel.coordY = shape['coordY'];
+                this.formLabel.width = shape['width'];
+                this.formLabel.height = shape['height'];
+                this.formLabel.conveyor = shape['conveyor'];
             }
         },
         // 添加/更新设备
@@ -335,7 +378,7 @@ export default {
                         });
                         // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
                         // 只有修改操作要手动刷新地图
-                        this.$emit('onDraw');
+                        this.$emit('init');
                     }
                     this.updatePlantData();
                 }
@@ -393,12 +436,11 @@ export default {
                 }, {});
                 // 判断是否存在
                 if (values[this.search] != null) {
-                    this.$emit('onSearch', this.$store.state.shapes.get(values[this.search]));
+                    this.$store.state.choose = values[this.search];
                 } else {
                     console.log('不存在该设备！');
                     this.$store.state.choose = '';
-                    // 清除信息栏
-                    this.$emit('clearForm');
+                    this.updateForm();
                 }
             } else {
                 console.log(`搜索设备编号: ${this.search}`);
@@ -414,7 +456,7 @@ export default {
                 var flag = false;
                 for (let key in values) {
                     if (values[key] == this.search) {
-                        this.$emit('onSearch', this.$store.state.shapes.get(key));
+                        this.$store.state.choose = key;
                         flag = true;
                         break;
                     }
@@ -422,17 +464,61 @@ export default {
                 if (!flag) {
                     console.log('不存在该设备！');
                     this.$store.state.choose = '';
-                    // 清除信息栏
-                    this.$emit('clearForm');
                 }
             }
+        },
+        // 问题点信息栏赋值
+        setProblemCount() {
+            if (!this.isEmpty(this.$store.state.choose)) {
+                const arr = this.$store.state.choose.split('+');
+                const deviceNum = arr[0];
+                const stationNum = arr[1];
+
+                this.execCountRequest(deviceNum, stationNum, null, null).then(data => {
+                    this.formMsg.problem.count = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
+                    this.formMsg.problem.needHelpAndUnfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
+                    this.formMsg.problem.needHelpAndfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, false, 'unfinished').then(data => {
+                    this.formMsg.problem.noHelpAndUnfinished = data;
+                })
+                this.execCountRequest(deviceNum, stationNum, false, 'finished').then(data => {
+                    this.formMsg.problem.noHelpAndfinished = data;
+                })
+            } else {
+                this.formMsg.problem.count = 0;
+                this.formMsg.problem.needHelpAndUnfinished = 0;
+                this.formMsg.problem.needHelpAndfinished = 0;
+                this.formMsg.problem.noHelpAndUnfinished = 0;
+                this.formMsg.problem.noHelpAndfinished = 0;
+            }
+        },
+        // 执行count请求，setProblemCount()调用
+        execCountRequest(deviceNum, stationNum, isNeedHelp, status) {
+            return new Promise((resolve, reject) => {
+                this.$axiosInstance.get("/plant/problems/count", {
+                    params: {
+                        plant: this.$store.state.plant,
+                        deviceNum: deviceNum,
+                        stationNum: stationNum,
+                        isNeedHelp: isNeedHelp,
+                        status: status
+                    }
+                }).then(function (response) {
+                    resolve(response.data['count']);
+                }).catch(function (error) {
+                    reject(error);
+                })
+            })
         },
         // 跳转到问题点列表页
         toProblems() {
             // 选中才可以点击跳转
             if (!this.isEmpty(this.$store.state.choose)) {
-                // 告诉父vue
-                this.$emit('toProblems');
                 this.$router.push(this.$route.path + '/problems');
             }
         },

@@ -1,5 +1,5 @@
 <template>
-    <section id="menu">
+    <section id="sidebar">
         <img class="logo" src="../../assets/logo.png" onclick="" />
         <el-tooltip class="box-item" effect="dark" content="组装" placement="right">
             <div id="assy" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave()"
@@ -50,10 +50,10 @@
 import { mapState } from 'vuex'
 
 export default {
-    name: 'Menu',
+    name: 'Sidebar',
     data() {
         return {
-            currentId: "assy",
+            currentId: this.$store.state.plant,
         }
     },
     computed: {
@@ -62,8 +62,6 @@ export default {
     mounted() {
     },
     methods: {
-        init() {
-        },
         // 鼠标移入
         handleMouseEnter(e) {
             this.currentId = e.target.id;
@@ -79,8 +77,9 @@ export default {
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
                 this.$store.state.plant = e.target.id;
+                this.$store.state.choose = '';
+                this.$store.commit('saveStateToStorage');
                 this.$router.push(`/map/${e.target.id}`);
-                this.$emit('toMap');
             }
         }
     }
@@ -88,7 +87,7 @@ export default {
 </script>
 
 <style scoped>
-#menu {
+#sidebar {
     /* 高度百分百，宽度固定 50px */
     background-color: #10472D;
     height: 100%;
@@ -99,7 +98,7 @@ export default {
 }
 
 /* 菜单栏的所有图标 */
-#menu div {
+#sidebar div {
     height: 30px;
     widows: 30px;
     margin: 20px 10px;

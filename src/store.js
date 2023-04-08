@@ -50,10 +50,12 @@ export default createStore({
     mutations: {
         // 保存到 sessionStorage 中
         saveStateToStorage(state) {
+            console.log('>>> saveStateToStorage')
             sessionStorage.setItem('choose', state.choose)
         },
         // 从 sessionStorage 中恢复
         restoreStateFromStorage(state) {
+            console.log('>>> restoreStateFromStorage');
             state.choose = sessionStorage.getItem('choose');
         }
     },
