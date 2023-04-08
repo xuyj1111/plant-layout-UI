@@ -57,6 +57,7 @@ export default {
          */
         drawMap(shape, key, multiple) {
             const mapContext = this.$refs['map'].getContext("2d");
+            mapContext.strokeStyle = "black";
             mapContext.beginPath();
             mapContext.rect(
                 shape["coordX"] * multiple,
@@ -64,17 +65,41 @@ export default {
                 shape["width"] * multiple,
                 shape["height"] * multiple
             );
-            if (key == this.$store.state.choose) {
-                // 选中设备
+            /**
+             * 有未解决的问题，显示红色
+             * 有审核的问题，显示黄色
+             * 没有问题，传送带显示黑色 其他设备显示灰色
+             */
+            if (shape['unfinishedCount'] > 0) {
                 mapContext.fillStyle = "red";
                 mapContext.fill();
+                mapContext.stroke();
+            } else if (shape['reviewCount']) {
+                mapContext.fillStyle = "yellow";
+                mapContext.fill();
+                mapContext.stroke();
             } else {
                 //传送带
                 if (shape["conveyor"] == "true") {
-                    mapContext.fillStyle = "#a8a6a5";
+                    mapContext.fillStyle = "black";
                     mapContext.fill();
+                    mapContext.stroke();
+                } else {
+                    mapContext.fillStyle = "#B5B5B5";
+                    mapContext.fill();
+                    mapContext.stroke();
                 }
-                // 其他设备
+            }
+            // 选中设备
+            if (key == this.$store.state.choose) {
+                mapContext.beginPath();
+                mapContext.rect(
+                    shape["coordX"] * multiple,
+                    shape["coordY"] * multiple,
+                    shape["width"] * multiple,
+                    shape["height"] * multiple
+                );
+                mapContext.strokeStyle = "#00ffff";
                 mapContext.stroke();
             }
         },
@@ -85,6 +110,7 @@ export default {
         async setPlantData() {
             const that = this;
             const shapes = this.$store.state.shapes;
+            // 获取地图数据
             await this.$axiosInstance.get("/plant", {
                 params: {
                     name: this.$store.state.plant
@@ -103,7 +129,25 @@ export default {
                 console.log(error);
                 window.alert("切换地图失败！请检查！");
                 return false;
-            })
+            });
+            // 获取地图groupBy count
+            await this.$axiosInstance.get("/plant/problems/groupby", {
+                params: {
+                    plant: this.$store.state.plant
+                }
+            }).then(function (response) {
+                for (let data of response.data) {
+                    let shape = shapes.get(data['deviceNum'] + '+' + data['stationNum']);
+                    if (shape != null) {
+                        shape['unfinishedCount'] = data['unfinishedCount'];
+                        shape['reviewCount'] = data['reviewCount'];
+                    }
+                }
+            }).catch(function (error) {
+                console.log(error);
+                window.alert("切换地图失败！请检查！");
+                return false;
+            });
         },
         // 切换地图校验json
         batchValidation(data, num) {

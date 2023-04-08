@@ -11,8 +11,7 @@
         <div id="operation">
             <!-- 搜索框 -->
             <span class="search">
-                <el-input v-model.trim="search" class="w-50 m-2" placeholder='支持搜索序号、提交人、问题点描述' @keyup.enter="handleSearch"
-                    @blur="handleSearch">
+                <el-input v-model.trim="search" class="w-50 m-2" placeholder='支持搜索序号、提交人、问题点描述'>
                     <template #prefix>
                         <el-icon class="el-input__icon">
                             <search />
@@ -113,6 +112,12 @@ export default {
             this.setProblemsCount();
             this.setTableData();
         });
+        // 监听search变量
+        this.$watch("search", (newVal, oldVal) => {
+            this.tableData = [];
+            this.setProblemsCount();
+            this.setTableData();
+        });
         // 监听page变量
         this.$watch("page", (newVal, oldVal) => {
             this.tableData = [];
@@ -137,7 +142,8 @@ export default {
                         plant: this.$store.state.plant,
                         deviceNum: this.deviceNum,
                         stationNum: this.stationNum,
-                        status: this.status == 'all' ? null : this.status
+                        status: this.status == 'all' ? null : this.status,
+                        search: this.isEmpty(this.search) ? null : this.search
                     }
                 }).then(function (response) {
                     resolve(response.data['count']);
@@ -160,7 +166,8 @@ export default {
                         stationNum: this.stationNum,
                         status: this.status == 'all' ? null : this.status,
                         page: this.page,
-                        size: 5
+                        size: 5,
+                        search: this.isEmpty(this.search) ? null : this.search
                     }
                 }).then(function (response) {
                     resolve(response.data);
@@ -174,29 +181,6 @@ export default {
         // page赋值 
         setPage(val) {
             this.page = val - 1;
-        },
-        // 搜索框搜索
-        handleSearch() {
-            console.log(`search: ${this.search}`);
-            new Promise((resolve, reject) => {
-                this.$axiosInstance.get("/plant/problems", {
-                    params: {
-                        plant: this.$store.state.plant,
-                        deviceNum: this.deviceNum,
-                        stationNum: this.stationNum,
-                        status: this.status == 'all' ? null : this.status,
-                        page: this.page,
-                        size: 5,
-                        search: this.isEmpty(this.search) ? null : this.search
-                    }
-                }).then(function (response) {
-                    resolve(response.data);
-                }).catch(function (error) {
-                    reject(error);
-                })
-            }).then(data => {
-                this.tableData = data;
-            })
         },
         // 判断字符串是否为空
         isEmpty(str) {

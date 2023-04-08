@@ -202,26 +202,51 @@ export default {
             }
         },
         // 画缩略图
-        drawThumbnail(value, key) {
+        drawThumbnail(shape, key) {
             const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
             thumbnailContext.beginPath();
+            thumbnailContext.strokeStyle = "black";
             thumbnailContext.rect(
-                value["coordX"] * 0.35,
-                value["coordY"] * 0.35,
-                value["width"] * 0.35,
-                value["height"] * 0.35
+                shape["coordX"] * 0.35,
+                shape["coordY"] * 0.35,
+                shape["width"] * 0.35,
+                shape["height"] * 0.35
             );
-            if (key == this.$store.state.choose) {
-                // 选中设备
+            /**
+             * 有未解决的问题，显示红色
+             * 有审核的问题，显示黄色
+             * 没有问题，传送带显示黑色 其他设备显示灰色
+             */
+            if (shape['unfinishedCount'] > 0) {
                 thumbnailContext.fillStyle = "red";
                 thumbnailContext.fill();
+                thumbnailContext.stroke();
+            } else if (shape['reviewCount']) {
+                thumbnailContext.fillStyle = "yellow";
+                thumbnailContext.fill();
+                thumbnailContext.stroke();
             } else {
                 //传送带
-                if (value["conveyor"] == "true") {
-                    thumbnailContext.fillStyle = "#a8a6a5";
+                if (shape["conveyor"] == "true") {
+                    thumbnailContext.fillStyle = "black";
                     thumbnailContext.fill();
+                    thumbnailContext.stroke();
+                } else {
+                    thumbnailContext.fillStyle = "#B5B5B5";
+                    thumbnailContext.fill();
+                    thumbnailContext.stroke();
                 }
-                // 其他设备
+            }
+            // 选中设备
+            if (key == this.$store.state.choose) {
+                thumbnailContext.beginPath();
+                thumbnailContext.rect(
+                    shape["coordX"] * 0.35,
+                    shape["coordY"] * 0.35,
+                    shape["width"] * 0.35,
+                    shape["height"] * 0.35
+                );
+                thumbnailContext.strokeStyle = "#00ffff";
                 thumbnailContext.stroke();
             }
         },
@@ -445,6 +470,7 @@ export default {
                 })
             })
         },
+        // 搜索
         handleSearch() {
             if (this.$store.state.plant == 'assy') {
                 console.log(`搜索岗位号: ${this.search}`);

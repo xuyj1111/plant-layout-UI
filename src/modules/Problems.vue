@@ -42,6 +42,9 @@ export default {
         } else {
             this.$router.push('/404');
         }
+        if (this.$store.state.choose == '') {
+            this.$router.push('/map/' + this.$store.state.plant);
+        }
     },
     /**
      * 渲染完成后；
@@ -51,7 +54,7 @@ export default {
      */
     mounted() {
         console.log('problems.vue mounted......');
-        
+
     },
     methods: {
     }

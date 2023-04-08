@@ -111,10 +111,9 @@ export default {
             // 地图放大，设备也同样放大
             const multiple = (1.0 + 0.05 * this.map.per);
             mapContext.clearRect(0, 0, this.map.width, this.map.height);
-            mapContext.strokeStyle = "black";
             thumbnailContext.clearRect(0, 0, this.thumbnail.width, this.thumbnail.height);
             thumbnailContext.strokeStyle = "black";
-            this.$store.state.shapes.forEach((shape, key) => {
+            this.$store.state.shapes.forEach(async (shape, key) => {
                 this.$refs['mapBody'].drawMap(shape, key, multiple);
                 this.$refs['infobar'].drawThumbnail(shape, key);
             });
