@@ -73,6 +73,8 @@ export default {
      */
     mounted() {
         console.log('map.vue mounted......');
+        // 缩略图选中框复位
+        this.$refs['mapBody'].$refs['section'].scrollTo(this.$store.state.map.scrollLeft, this.$store.state.map.scrollTop);
         // 地图页的初始化
         this.init();
         // window监听事件

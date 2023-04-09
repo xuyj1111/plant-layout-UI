@@ -52,6 +52,9 @@ export default {
                         that.$store.state.user = that.form.name;
                         that.$store.state.role = response.data;
                         that.$store.state.choose = '';
+                        that.$store.state.map.per = 10;
+                        that.$store.state.map.width = 870;
+                        that.$store.state.map.height = 570;
                         sessionStorage.setItem('isLogin', 'true');
                         that.$store.commit('saveStateToStorage');
                         that.$router.push('/map');
