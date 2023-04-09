@@ -5,10 +5,14 @@
 <script>
 import Map from './modules/Map.vue';
 import Login from './modules/Login.vue';
+import Problems from './modules/Problems.vue';
 
 export default {
   name: 'app',
   components: {
+    Map,
+    Login,
+    Problems
   },
   data() {
     return {

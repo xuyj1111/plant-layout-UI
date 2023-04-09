@@ -1,6 +1,9 @@
 <template>
     <body>
-        <Sidebar ref="sidebar" />
+        <!-- 
+            @removeResizeEvent: 删除“页面大小变化”事件
+         -->
+        <Sidebar ref="sidebar" @removeResizeEvent="removeResizeEvent" />
         <!-- 
             @onScrollBar: 滚动条
          -->
@@ -8,8 +11,9 @@
         <!-- 
             @init
             @onDraging: 拖拽选中框
+            @removeResizeEvent: 删除“页面大小变化”事件
         -->
-        <Infobar ref="infobar" @init="init" @onDraging="draging" />
+        <Infobar ref="infobar" @init="init" @onDraging="draging" @removeResizeEvent="removeResizeEvent" />
     </body>
 </template>
 
@@ -26,6 +30,11 @@ export default {
     name: 'Map',
     data() {
         return {
+            // 存储鼠标xy值，实现移动选中框使用
+            clientXCache: null,
+            clientYCache: null,
+            // “页面大小变化”时，延时防重复触发
+            resizeTimer: null
         }
     },
     components: {
@@ -66,10 +75,17 @@ export default {
         console.log('map.vue mounted......');
         // 地图页的初始化
         this.init();
-        // 监听浏览器页面大小变化
-        window.addEventListener('resize', () => {
-            this.init();
-        });
+        // window监听事件
+        if (!this.$store.state.isAddWindowEvent) {
+            // 监听浏览器页面大小变化
+            window.addEventListener("resize", this.resizeWindowEvent);
+            // 监听鼠标，辅助实现缩略图选中框移动
+            window.addEventListener('mousemove', (event => {
+                this.clientXCache = event.clientX;
+                this.clientYCache = event.clientY;
+            }));
+            this.$store.state.isAddWindowEvent = true;
+        }
         // 监听choose变量
         this.$watch("$store.state.choose", (newVal, oldVal) => {
             if (newVal == '') {
@@ -117,6 +133,8 @@ export default {
                 this.$refs['mapBody'].drawMap(shape, key, multiple);
                 this.$refs['infobar'].drawThumbnail(shape, key);
             });
+            this.$refs['mapBody'].drawChoose(multiple);
+            this.$refs['infobar'].drawChoose();
             this.drawThumbnailCheck();
         },
         // 画缩略图的选中框
@@ -139,8 +157,27 @@ export default {
         // 滚动条偏移量赋值
         setScrollTopAndScrollLeft() {
             const dom = this.$refs['mapBody'].$refs['section'];
+            const infobar = this.$refs['infobar'];
             this.map.scrollLeft = dom.scrollLeft;
             this.map.scrollTop = dom.scrollTop;
+            infobar.firstClickX = this.clientXCache - infobar.rectLeft;
+            infobar.firstClickY = this.clientYCache - infobar.rectTop;
+        },
+        // “页面大小变化”事件触发代码
+        resizeWindowEvent() {
+            var that = this;
+            clearTimeout(this.resizeTimer);
+            this.resizeTimer = setTimeout(function () {
+                that.init();
+                console.log('页面结束变化');
+            }, 500);
+        },
+        // 删除“页面大小变化”事件
+        removeResizeEvent() {
+            if (this.$store.state.isAddWindowEvent) {
+                window.removeEventListener("resize", this.resizeWindowEvent);
+                this.$store.state.isAddWindowEvent = false;
+            }
         }
     }
 }

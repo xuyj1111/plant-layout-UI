@@ -237,8 +237,13 @@ export default {
                     thumbnailContext.stroke();
                 }
             }
+        },
+        // 画选中图形
+        drawChoose() {
+            const shape = this.$store.state.shapes.get(this.$store.state.choose);
+            const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
             // 选中设备
-            if (key == this.$store.state.choose) {
+            if (shape != null) {
                 thumbnailContext.beginPath();
                 thumbnailContext.rect(
                     shape["coordX"] * 0.35,
@@ -246,8 +251,8 @@ export default {
                     shape["width"] * 0.35,
                     shape["height"] * 0.35
                 );
-                thumbnailContext.strokeStyle = "#00ffff";
-                thumbnailContext.stroke();
+                thumbnailContext.fillStyle = "#00ffff";
+                thumbnailContext.fill();
             }
         },
         // 画缩略图的选中框
@@ -296,16 +301,12 @@ export default {
                 // x, y 是鼠标在缩略图中的相对坐标
                 const x = event.clientX - this.rectLeft;
                 const y = event.clientY - this.rectTop;
-                // 判断点击位置，是否在选中框内
-                if ((x >= this.thumbnail.checkOffsetX && x <= (this.thumbnail.checkOffsetX + this.thumbnail.checkWidth))
-                    && (y >= this.thumbnail.checkOffsetY && y <= (this.thumbnail.checkOffsetY + this.thumbnail.checkHeight))) {
-                    // (x - this.firstClickX) 表示：鼠标首次点击坐标，至当前坐标的偏移量
-                    // offsetX、offsetY 表示：缩略图偏移量 转换为 地图偏移量
-                    const offsetX = ((x - this.firstClickX) / this.thumbnail.width) * this.map.width;
-                    const offsetY = ((y - this.firstClickY) / this.thumbnail.height) * this.map.height;
-                    // 当前滚动条偏移量 + 地图偏移量 = 目标滚动条偏移量
-                    this.$emit('onDraging', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
-                }
+                // (x - this.firstClickX) 表示：鼠标首次点击坐标，至当前坐标的偏移量
+                // offsetX、offsetY 表示：缩略图偏移量 转换为 地图偏移量
+                const offsetX = ((x - this.firstClickX) / this.thumbnail.width) * this.map.width;
+                const offsetY = ((y - this.firstClickY) / this.thumbnail.height) * this.map.height;
+                // 当前滚动条偏移量 + 地图偏移量 = 目标滚动条偏移量
+                this.$emit('onDraging', this.map.scrollLeft + offsetX, this.map.scrollTop + offsetY);
             }
         },
         updateForm() {
@@ -568,6 +569,7 @@ export default {
         toProblems() {
             // 选中才可以点击跳转
             if (!this.isEmpty(this.$store.state.choose)) {
+                this.$emit('removeResizeEvent');
                 this.$router.push(this.$route.path + '/problems');
             }
         },

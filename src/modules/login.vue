@@ -43,7 +43,7 @@ export default {
          */
         onSubmit(formName) {
             this.$refs[formName].validate((valid) => {
-                var that = this;
+                const that = this;
                 if (valid) {
                     this.$axiosInstance.post("/login", {
                         user: this.form.name,

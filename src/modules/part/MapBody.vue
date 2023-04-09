@@ -16,7 +16,7 @@ export default {
     },
     mounted() {
         console.log('mapBody.vue mounted......');
-        var that = this;
+        const that = this;
         // 地图中的点击事件，以选中设备
         this.$refs['map'].addEventListener('click', function (e) {
             const mapContext = that.$refs['map'].getContext("2d");
@@ -90,8 +90,13 @@ export default {
                     mapContext.stroke();
                 }
             }
+        },
+        // 画选中图形边框
+        drawChoose(multiple) {
+            const shape = this.$store.state.shapes.get(this.$store.state.choose);
+            const mapContext = this.$refs['map'].getContext("2d");
             // 选中设备
-            if (key == this.$store.state.choose) {
+            if (shape != null) {
                 mapContext.beginPath();
                 mapContext.rect(
                     shape["coordX"] * multiple,
@@ -99,8 +104,10 @@ export default {
                     shape["width"] * multiple,
                     shape["height"] * multiple
                 );
+                mapContext.lineWidth = 2;
                 mapContext.strokeStyle = "#00ffff";
                 mapContext.stroke();
+                mapContext.lineWidth = 1;
             }
         },
         /**

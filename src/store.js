@@ -45,7 +45,9 @@ export default createStore({
             // 选中框x,y
             checkOffsetX: 0,
             checkOffsetY: 0
-        }
+        },
+        // window事件是否添加
+        isAddWindowEvent: false
     },
     mutations: {
         // 保存到 sessionStorage 中
