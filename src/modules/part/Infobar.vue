@@ -1,6 +1,10 @@
 <template>
     <!-- 操作栏 -->
     <section id="operation">
+        <div id="account">
+            <span class="element">{{ ROLE_VALUE[$store.state.role] }}
+                {{ USER_VALUE[$store.state.user] }}</span>
+        </div>
         <!-- 搜索框 -->
         <div id="search">
             <el-input v-model.trim="search" class="w-50 m-2"
@@ -176,6 +180,26 @@ export default {
                 conveyor: [
                     { required: true, message: '传送带选项不能为空', trigger: 'submit' }
                 ]
+            },
+            ROLE_VALUE: {
+                'root': '管理员账号：',
+                'assist': '辅助部门：',
+                'local': '现场部门：'
+            },
+            USER_VALUE: {
+                'root': 'root',
+                'zt1': 'ZT1-保全',
+                'zt2': 'ZT2-组装技术',
+                'zt3': 'ZT3-加工技术',
+                'improve': '改善班',
+                'provide': '供给中心',
+                'assy': '组装',
+                'logistics': '物流',
+                'case': '外壳',
+                'gear': '齿轮',
+                'pulley': '带轮',
+                'differential': '差速器',
+                'heat': '热处理'
             }
         }
     },
@@ -603,9 +627,16 @@ export default {
     flex-direction: column;
 }
 
+/* 账号显示 */
+#account {
+    font-weight: bold;
+    font-size: 18px;
+    margin: 10px 5px 0px 15px;
+}
+
 /* 搜索框 */
 #search {
-    margin: 20px auto 0;
+    margin: 10px auto 0;
 }
 
 /* 编辑信息开关 */
@@ -619,12 +650,12 @@ export default {
 #info,
 #edit_info {
     width: 220px;
-    margin: 10px auto 0;
+    margin: 0px auto 0;
 }
 
 /* 问题点链接 */
 #link {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     margin-top: 10px;
     position: relative;
     left: 110px;

@@ -6,6 +6,9 @@
             </div>
             <span class="element">{{ isEmpty(deviceNum) ? '' : `设备编号：${deviceNum}` }}</span>
             <span class="element">{{ isEmpty(stationNum) ? '' : `岗位号：${stationNum}` }}</span>
+
+            <span id='account' class="element">{{ ROLE_VALUE[$store.state.role] }}
+                {{ USER_VALUE[$store.state.user] }}</span>
         </div>
 
         <div id="operation">
@@ -98,7 +101,27 @@ export default {
             status: 'all',
             tableData: [],
             count: 0,
-            page: 0
+            page: 0,
+            ROLE_VALUE: {
+                'root': '管理员账号：',
+                'assist': '辅助部门：',
+                'local': '现场部门：'
+            },
+            USER_VALUE: {
+                'root': 'root',
+                'zt1': 'ZT1-保全',
+                'zt2': 'ZT2-组装技术',
+                'zt3': 'ZT3-加工技术',
+                'improve': '改善班',
+                'provide': '供给中心',
+                'assy': '组装',
+                'logistics': '物流',
+                'case': '外壳',
+                'gear': '齿轮',
+                'pulley': '带轮',
+                'differential': '差速器',
+                'heat': '热处理'
+            }
         }
     },
     mounted() {
@@ -210,9 +233,10 @@ export default {
     margin: 10px 0px 10px 20px;
 }
 
-.body #operation {
-    position: relative;
-    width: 100%;
+.body #title #account {
+    float: right;
+    margin-right: 20px;
+    margin-top: 0px;
 }
 
 .body #operation .search {
@@ -223,10 +247,10 @@ export default {
 }
 
 .body #operation .filter {
-    width: 140px;
-    display: inline-block;
-    position: relative;
-    left: calc(100% - 440px);
+    width: 140px;    
+    float: right;
+    margin-right: 20px;
+    margin-top: 0px;
 }
 
 .body #table {

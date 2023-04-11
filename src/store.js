@@ -54,11 +54,16 @@ export default createStore({
         saveStateToStorage(state) {
             console.log('>>> saveStateToStorage')
             sessionStorage.setItem('choose', state.choose)
+            sessionStorage.setItem('user', state.user)
+            sessionStorage.setItem('role', state.role)
         },
         // 从 sessionStorage 中恢复
         restoreStateFromStorage(state) {
             console.log('>>> restoreStateFromStorage');
             state.choose = sessionStorage.getItem('choose');
+            state.user = sessionStorage.getItem('user');
+            state.role = sessionStorage.getItem('role');
+            console.log(state.plant);
         }
     },
     // 在页面关闭或刷新前保存 state 的状态
