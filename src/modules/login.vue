@@ -58,9 +58,18 @@ export default {
                         sessionStorage.setItem('isLogin', 'true');
                         that.$store.commit('saveStateToStorage');
                         that.$router.push('/map');
+                        that.$message({
+                            showClose: true,
+                            message: `欢迎登录`,
+                            type: 'success'
+                        });
                     }).catch(function (error) {
                         console.log(error);
-                        window.alert('账号密码错误！请重新输入！');
+                        that.$message({
+                            showClose: true,
+                            message: '账号密码错误！请重新输入！',
+                            type: 'error'
+                        });
                         return false;
                     })
                 } else {

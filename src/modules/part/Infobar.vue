@@ -9,7 +9,7 @@
         <div id="search">
             <el-input v-model.trim="search" class="w-50 m-2"
                 :placeholder="this.$store.state.plant == 'assy' ? '请输入岗位号' : '请输入设备编号'" @keyup.enter="handleSearch"
-                @blur="handleSearch">
+                >
                 <template #prefix>
                     <el-icon class="el-input__icon">
                         <search />
@@ -368,7 +368,11 @@ export default {
                         }
                         // 判断设备编号 + 岗位号是否存在
                         if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
-                            window.alert('该设备编号 + 岗位号已存在！操作失败！');
+                            this.$message({
+                                showClose: true,
+                                message: '该设备编号 + 岗位号已存在！操作失败！',
+                                type: 'error'
+                            });
                             return;
                         }
                     } else {
@@ -379,37 +383,56 @@ export default {
                     }
                     // 坐标X、Y、width、height是否都是数字
                     if (!this.isNumeric(this.formLabel.coordX)) {
-                        window.alert('坐标X不是数字！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '坐标X不是数字！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     if (!this.isNumeric(this.formLabel.coordY)) {
-                        window.alert('坐标Y不是数字！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '坐标Y不是数字！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     if (!this.isNumeric(this.formLabel.width)) {
-                        window.alert('宽度不是数字！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '宽度不是数字！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     if (!this.isNumeric(this.formLabel.height)) {
-                        window.alert('高度不是数字！操作失败！');
-                        return;
-                    }
-                    if (!this.isNumeric(this.formLabel.coordX)) {
-                        window.alert('坐标X不是数字！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '高度不是数字！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     // x+width不能超过580，y+height不能超过380
                     if ((parseFloat(this.formLabel.coordX) + parseFloat(this.formLabel.width)) > 580) {
-                        window.alert('坐标X加宽度不可超过580！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '坐标X + 宽度不可超过580！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     if ((parseFloat(this.formLabel.coordY) + parseFloat(this.formLabel.height)) > 380) {
-                        window.alert('坐标Y加高度不可超过380！操作失败！');
+                        this.$message({
+                            showClose: true,
+                            message: '坐标Y + 高度不可超过380！操作失败！',
+                            type: 'error'
+                        });
                         return;
                     }
                     // 添加/更新设备操作
                     if (this.$store.state.choose == '') {
-                        this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
                         this.$store.state.shapes.set(this.$store.state.choose, {
                             deviceNum: this.formLabel.deviceNum,
                             stationNum: this.formLabel.stationNum,
@@ -421,8 +444,16 @@ export default {
                         });
                         this.updatePlantData().then(data => {
                             this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                            this.$message({
+                                showClose: true,
+                                message: '添加设备成功！',
+                                type: 'success'
+                            });
+                            this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
                         })
                     } else {
+                        // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
+                        // 只有修改操作要手动刷新地图
                         this.$store.state.shapes.set(this.$store.state.choose, {
                             deviceNum: this.formLabel.deviceNum,
                             stationNum: this.formLabel.stationNum,
@@ -432,9 +463,12 @@ export default {
                             height: this.formLabel.height,
                             conveyor: this.formLabel.conveyor
                         });
-                        // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
-                        // 只有修改操作要手动刷新地图
                         this.updatePlantData().then(data => {
+                            this.$message({
+                                showClose: true,
+                                message: '修改设备成功！',
+                                type: 'success'
+                            });
                             this.$emit('init');
                         })
                     }
@@ -446,7 +480,11 @@ export default {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
                     if (this.$store.state.choose == '') {
-                        window.alert('未选中设备，无法删除！');
+                        this.$message({
+                            showClose: true,
+                            message: '未选中设备，无法删除！',
+                            type: 'error'
+                        });
                         this.formMsg.deviceNum = '';
                         this.formMsg.stationNum = '';
                         this.formLabel.deviceNum = '';
@@ -465,6 +503,11 @@ export default {
                     }
                     this.$store.state.shapes.delete(this.$store.state.choose);
                     this.updatePlantData().then(data => {
+                        this.$message({
+                            showClose: true,
+                            message: '删除设备成功！',
+                            type: 'success'
+                        });
                         this.$store.state.choose = '';
                         this.formMsg.deviceNum = '';
                         this.formMsg.stationNum = '';
@@ -481,6 +524,7 @@ export default {
         },
         // 更新地图数据
         updatePlantData() {
+            const that = this;
             return new Promise((resolve, reject) => {
                 this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(this.$store.state.shapes.values()))), {
                     params: {
@@ -490,7 +534,11 @@ export default {
                     console.log('地图数据更新成功！');
                     resolve(response);
                 }).catch(function (error) {
-                    window.alert('更新地图错误！请检查！');
+                    that.$message({
+                        showClose: true,
+                        message: '更新地图错误！请检查！',
+                        type: 'error'
+                    });
                     reject(error);
                 })
             })
@@ -508,7 +556,11 @@ export default {
                 if (values[this.search] != null) {
                     this.$store.state.choose = values[this.search];
                 } else {
-                    console.log('不存在该设备！');
+                    this.$message({
+                        showClose: true,
+                        message: '不存在该设备！',
+                        type: 'warning'
+                    });
                     this.$store.state.choose = '';
                     this.updateForm();
                 }
@@ -532,7 +584,11 @@ export default {
                     }
                 }
                 if (!flag) {
-                    console.log('不存在该设备！');
+                    this.$message({
+                        showClose: true,
+                        message: '不存在该设备！',
+                        type: 'warning'
+                    });
                     this.$store.state.choose = '';
                 }
             }
@@ -595,6 +651,12 @@ export default {
             if (!this.isEmpty(this.$store.state.choose)) {
                 this.$emit('removeResizeEvent');
                 this.$router.push(this.$route.path + '/problems');
+            } else {
+                this.$message({
+                    showClose: true,
+                    message: '请选中设备',
+                    type: 'warning'
+                });
             }
         },
         // 判断字符串是否为空

@@ -134,7 +134,11 @@ export default {
                 }
             }).catch(function (error) {
                 console.log(error);
-                window.alert("切换地图失败！请检查！");
+                that.$message({
+                    showClose: true,
+                    message: '切换地图失败！请检查！',
+                    type: 'error'
+                });
                 return false;
             });
             // 获取地图groupBy count
@@ -152,7 +156,11 @@ export default {
                 }
             }).catch(function (error) {
                 console.log(error);
-                window.alert("切换地图失败！请检查！");
+                that.$message({
+                    showClose: true,
+                    message: '切换地图失败！请检查！',
+                    type: 'error'
+                });
                 return false;
             });
         },
@@ -190,11 +198,11 @@ export default {
                 return false;
             } else {
                 if (parseFloat(data["coordX"]) + parseFloat(data["width"]) > 580) {
-                    console.log(`第${num}个坐标X加宽度不可超过580! deviceNum[${data['deviceNum']}], 跳过`);
+                    console.log(`第${num}个坐标X + 宽度不可超过580! deviceNum[${data['deviceNum']}], 跳过`);
                     return false;
                 }
                 if (parseFloat(data["coordY"]) + parseFloat(data["height"]) > 380) {
-                    console.log(`第${num}个坐标Y加高度不可超过380! deviceNum[${data['deviceNum']}], 跳过`);
+                    console.log(`第${num}个坐标Y + 高度不可超过380! deviceNum[${data['deviceNum']}], 跳过`);
                     return false;
                 }
                 return true;

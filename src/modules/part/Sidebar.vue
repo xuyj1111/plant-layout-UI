@@ -75,6 +75,11 @@ export default {
             if (e.target.id == 'logout') {
                 this.$emit('removeResizeEvent');
                 this.$router.push('/logout');
+                this.$message({
+                    showClose: true,
+                    message: `登出系统`,
+                    type: 'warning'
+                });
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
                 this.$store.state.plant = e.target.id;
