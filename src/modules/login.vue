@@ -3,7 +3,7 @@
         <el-form ref="form" :model="form" :rules="rules" class="login-box">
             <h2 class="title">欢迎登陆</h2>
             <el-form-item label="账号" class="item" prop="name">
-                <el-input type="text" placeholder="请输入用户名" v-model="form.name" />
+                <el-input type="text" placeholder="请输入账号" v-model="form.name" />
             </el-form-item>
             <el-form-item label="密码" class="item" prop="password">
                 <el-input type="password" placeholder="请输入密码" v-model="form.password" />
@@ -38,7 +38,7 @@ export default {
          * @param {*} formName 表单名
          * 1. 表单校验
          * 2. 登陆请求
-         *      成功获得用户名（user）角色（role），跳转到‘/map’
+         *      成功获得账号（user）角色（role），跳转到‘/map’
          *      失败报错
          */
         onSubmit(formName) {
@@ -51,6 +51,11 @@ export default {
                     }).then(function (response) {
                         that.$store.state.user = that.form.name;
                         that.$store.state.role = response.data;
+                        if (response.data == 'local') {
+                            that.$store.state.plant = that.form.name;
+                        } else {
+                            that.$store.state.plant = 'assy';
+                        }
                         that.$store.state.choose = '';
                         that.$store.state.map.per = 10;
                         that.$store.state.map.width = 870;

@@ -8,8 +8,7 @@
         <!-- 搜索框 -->
         <div id="search">
             <el-input v-model.trim="search" class="w-50 m-2"
-                :placeholder="this.$store.state.plant == 'assy' ? '请输入岗位号' : '请输入设备编号'" @keyup.enter="handleSearch"
-                >
+                :placeholder="this.$store.state.plant == 'assy' ? '请输入岗位号' : '请输入设备编号'" @keyup.enter="handleSearch">
                 <template #prefix>
                     <el-icon class="el-input__icon">
                         <search />
@@ -31,8 +30,9 @@
                 }}</el-descriptions-item>
             </el-descriptions>
             <el-descriptions title="问题点" :column="1" border>
-                <el-descriptions-item label="总数" label-align="right" align="center" width="100px">{{ formMsg.problem.count
-                }}</el-descriptions-item>
+                <el-descriptions-item label="总数" label-align="right" align="center" width="100px">
+                    {{ formMsg.problem.count }}
+                </el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
                     <span style="color: red">{{ formMsg.problem.needHelpAndUnfinished }}</span>
                     <span> / </span>
@@ -229,7 +229,7 @@ export default {
         drawThumbnail(shape, key) {
             const thumbnailContext = this.$refs['thumbnailDom'].getContext("2d");
             thumbnailContext.beginPath();
-            thumbnailContext.strokeStyle = "black";
+            thumbnailContext.strokeStyle = "#696969";
             thumbnailContext.rect(
                 shape["coordX"] * 0.35,
                 shape["coordY"] * 0.35,
@@ -370,7 +370,7 @@ export default {
                         if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
                             this.$message({
                                 showClose: true,
-                                message: '该设备编号 + 岗位号已存在！操作失败！',
+                                message: '该设备编号 + 岗位号已存在！添加失败！',
                                 type: 'error'
                             });
                             return;
@@ -595,37 +595,31 @@ export default {
         },
         // 问题点信息栏赋值
         setProblemCount() {
+            var deviceNum = null;
+            var stationNum = null;
             if (!this.isEmpty(this.$store.state.choose)) {
                 const arr = this.$store.state.choose.split('+');
-                const deviceNum = arr[0];
-                const stationNum = arr[1];
-
-                this.execCountRequest(deviceNum, stationNum, null, null).then(data => {
-                    this.formMsg.problem.count = data;
-                })
-                this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
-                    this.formMsg.problem.needHelpAndUnfinished = data;
-                })
-                this.execCountRequest(deviceNum, stationNum, true, 'review').then(data => {
-                    this.formMsg.problem.needHelpAndReview = data;
-                })
-                this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
-                    this.formMsg.problem.needHelpAndfinished = data;
-                })
-                this.execCountRequest(deviceNum, stationNum, false, 'unfinished').then(data => {
-                    this.formMsg.problem.noHelpAndUnfinished = data;
-                })
-                this.execCountRequest(deviceNum, stationNum, false, 'finished').then(data => {
-                    this.formMsg.problem.noHelpAndfinished = data;
-                })
-            } else {
-                this.formMsg.problem.count = 0;
-                this.formMsg.problem.needHelpAndUnfinished = 0;
-                this.formMsg.problem.needHelpAndReview = 0;
-                this.formMsg.problem.needHelpAndfinished = 0;
-                this.formMsg.problem.noHelpAndUnfinished = 0;
-                this.formMsg.problem.noHelpAndfinished = 0;
+                deviceNum = arr[0];
+                stationNum = arr[1];
             }
+            this.execCountRequest(deviceNum, stationNum, null, null).then(data => {
+                this.formMsg.problem.count = data;
+            })
+            this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
+                this.formMsg.problem.needHelpAndUnfinished = data;
+            })
+            this.execCountRequest(deviceNum, stationNum, true, 'review').then(data => {
+                this.formMsg.problem.needHelpAndReview = data;
+            })
+            this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
+                this.formMsg.problem.needHelpAndfinished = data;
+            })
+            this.execCountRequest(deviceNum, stationNum, false, 'unfinished').then(data => {
+                this.formMsg.problem.noHelpAndUnfinished = data;
+            })
+            this.execCountRequest(deviceNum, stationNum, false, 'finished').then(data => {
+                this.formMsg.problem.noHelpAndfinished = data;
+            })
         },
         // 执行count请求，setProblemCount()调用
         execCountRequest(deviceNum, stationNum, isNeedHelp, status) {

@@ -57,7 +57,7 @@ export default {
          */
         drawMap(shape, key, multiple) {
             const mapContext = this.$refs['map'].getContext("2d");
-            mapContext.strokeStyle = "black";
+            mapContext.strokeStyle = "#696969";
             mapContext.beginPath();
             mapContext.rect(
                 shape["coordX"] * multiple,
