@@ -22,11 +22,18 @@
                     </template>
                 </el-input>
             </span>
+            <!-- 状态选项 -->
+            <span class="statusFilter">
+                <el-select v-model="status">
+                    <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value">
+                    </el-option>
+                </el-select>
+            </span>
 
-            <!-- 过滤选项 -->
-            <span class="filter">
-                <el-select v-model="status" placeholder="所有问题点">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+            <!-- 协助部门选项 -->
+            <span class="departFilter">
+                <el-select v-model="department">
+                    <el-option v-for="item in departOptions" :key="item.value" :label="item.label" :value="item.value">
                     </el-option>
                 </el-select>
             </span>
@@ -85,9 +92,9 @@ export default {
             deviceNum: '',
             stationNum: '',
             search: '',
-            options: [{
+            statusOptions: [{
                 value: 'all',
-                label: '所有'
+                label: '所有状态'
             }, {
                 value: 'unfinished',
                 label: '未完成'
@@ -99,6 +106,29 @@ export default {
                 label: '已完成'
             }],
             status: 'all',
+            department: 'all',
+            departOptions: [{
+                value: 'all',
+                label: '所有部门'
+            }, {
+                value: 'ZT1-保全',
+                label: 'ZT1-保全'
+            }, {
+                value: 'ZT2-组装技术',
+                label: 'ZT2-组装技术'
+            }, {
+                value: 'ZT3-加工技术',
+                label: 'ZT3-加工技术'
+            }, {
+                value: '改善班',
+                label: '改善班'
+            }, {
+                value: '供给中心',
+                label: '供给中心'
+            }, {
+                value: '否',
+                label: '否'
+            }],
             tableData: [],
             count: 0,
             page: 0,
@@ -135,6 +165,12 @@ export default {
             this.setProblemsCount();
             this.setTableData();
         });
+        // 监听department变量
+        this.$watch("department", (newVal, oldVal) => {
+            this.tableData = [];
+            this.setProblemsCount();
+            this.setTableData();
+        });
         // 监听search变量
         this.$watch("search", (newVal, oldVal) => {
             this.tableData = [];
@@ -166,7 +202,8 @@ export default {
                         deviceNum: this.deviceNum,
                         stationNum: this.stationNum,
                         status: this.status == 'all' ? null : this.status,
-                        search: this.isEmpty(this.search) ? null : this.search
+                        search: this.isEmpty(this.search) ? null : this.search,
+                        department: this.department == 'all' ? null : this.department
                     }
                 }).then(function (response) {
                     resolve(response.data['count']);
@@ -190,7 +227,8 @@ export default {
                         status: this.status == 'all' ? null : this.status,
                         page: this.page,
                         size: 5,
-                        search: this.isEmpty(this.search) ? null : this.search
+                        search: this.isEmpty(this.search) ? null : this.search,
+                        department: this.department == 'all' ? null : this.department
                     }
                 }).then(function (response) {
                     resolve(response.data);
@@ -246,8 +284,15 @@ export default {
     left: 20px;
 }
 
-.body #operation .filter {
-    width: 140px;    
+.body #operation .departFilter {
+    width: 140px;
+    float: right;
+    margin-right: 20px;
+    margin-top: 0px;
+}
+
+.body #operation .statusFilter {
+    width: 140px;
     float: right;
     margin-right: 20px;
     margin-top: 0px;
