@@ -18,7 +18,7 @@
         </div>
 
         <div id="switch">
-            <el-switch v-model="switch_value" active-text="编辑信息" />
+            <el-switch ref="switch" v-model="switch_value" active-text="编辑信息" :disabled="$store.state.role != 'root'" />
         </div>
 
         <!-- 不可编辑信息栏 -->
