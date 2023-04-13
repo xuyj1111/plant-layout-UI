@@ -74,7 +74,7 @@ export default {
                 mapContext.fillStyle = "red";
                 mapContext.fill();
                 mapContext.stroke();
-            } else if (shape['reviewCount']) {
+            } else if (shape['reviewCount'] > 0) {
                 mapContext.fillStyle = "yellow";
                 mapContext.fill();
                 mapContext.stroke();

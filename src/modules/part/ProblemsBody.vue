@@ -57,13 +57,13 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="status" label="状态" fixed="right">
-                    <template v-slot="{ row }">
-                        <el-button v-if="row.status == '已完成'" type="success" disabled
-                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
-                        <el-button v-else-if="row.status == '审核中'" type="warning"
-                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
+                    <template v-slot="{ row, $index }">
+                        <el-button v-if="row.status == '已完成'" type="success" disabled>{{ row.status }}</el-button>
+                        <el-button v-else-if="row.status == '审核中'" type="warning" @click="handleReview(row.id, $index)">{{
+                            row.status }}</el-button>
                         <el-button v-else-if="row.status == '未完成'" type="danger"
-                            @click="handleEdit(scope.$index, scope.row)">{{ row.status }}</el-button>
+                            @click="handleUnfinished(row.id, row.isNeedHelp, $index)">{{
+                                row.status }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -242,6 +242,116 @@ export default {
         // page赋值 
         setPage(val) {
             this.page = val - 1;
+        },
+        // 点击“审核中”
+        handleReview(id, index) {
+            if (this.$store.state.role == 'root' || (this.$store.state.role == 'local' &&
+                this.$store.state.plant == this.$store.state.user)) {
+                if (!confirm('是否完成此问题点？')) {
+                    // 否 跳出
+                    return;
+                }
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.put("/plant/problem", {}, {
+                        params: {
+                            id: id,
+                            status: 'finished'
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(() => {
+                    this.tableData[index]['status'] = '已完成';
+                })
+            } else {
+                this.$message({
+                    showClose: true,
+                    message: '当前账号没有权限',
+                    type: 'warning'
+                });
+            }
+        },
+        // 点击“未完成”
+        handleUnfinished(id, isNeedHelp, index) {
+            if (this.$store.state.role == 'root') {
+                if (!confirm('是否完成此问题点？')) {
+                    // 否 跳出
+                    return;
+                }
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.put("/plant/problem", {}, {
+                        params: {
+                            id: id,
+                            status: 'finished'
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(() => {
+                    this.tableData[index]['status'] = '已完成';
+                })
+            }
+            else if (this.$store.state.role == 'local' &&
+                this.$store.state.plant == this.$store.state.user) {
+                // 不需要协助，直接完成
+                if (isNeedHelp == '否') {
+                    if (!confirm('是否完成此问题点？')) {
+                        // 否 跳出
+                        return;
+                    }
+                    new Promise((resolve, reject) => {
+                        this.$axiosInstance.put("/plant/problem", {}, {
+                            params: {
+                                id: id,
+                                status: 'finished'
+                            }
+                        }).then(function (response) {
+                            resolve(response.data);
+                        }).catch(function (error) {
+                            reject(error);
+                        })
+                    }).then(() => {
+                        this.tableData[index]['status'] = '已完成';
+                    })
+                } else {
+                    // 需要协助问题点，不能点击
+                    this.$message({
+                        showClose: true,
+                        message: '当前账号没有权限',
+                        type: 'warning'
+                    });
+                }
+            } else if (this.$store.state.role == 'assist' &&
+                this.USER_VALUE[this.$store.state.user] == isNeedHelp) {
+                if (!confirm('是否提交审核此问题点？')) {
+                    // 否 跳出
+                    return;
+                }
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.put("/plant/problem", {}, {
+                        params: {
+                            id: id,
+                            status: 'review'
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(() => {
+                    this.tableData[index]['status'] = '审核中';
+                })
+            } else {
+                this.$message({
+                    showClose: true,
+                    message: '当前账号没有权限',
+                    type: 'warning'
+                });
+            }
         },
         // 判断字符串是否为空
         isEmpty(str) {

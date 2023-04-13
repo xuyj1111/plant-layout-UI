@@ -525,8 +525,14 @@ export default {
         // 更新地图数据
         updatePlantData() {
             const that = this;
+            var shapes = this.$store.state.shapes;
+            // 删除reviewCount、unfinishedCount，防止更新到地图文件中
+            for (let [key, value] of shapes) {
+                delete value.reviewCount;
+                delete value.unfinishedCount;
+            }
             return new Promise((resolve, reject) => {
-                this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(this.$store.state.shapes.values()))), {
+                this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(shapes.values()))), {
                     params: {
                         name: this.$store.state.plant
                     }
