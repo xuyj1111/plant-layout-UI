@@ -16,7 +16,6 @@
                 </template>
             </el-input>
         </div>
-
         <div id="switch">
             <el-switch ref="switch" v-model="switch_value" active-text="编辑信息" :disabled="$store.state.role != 'root'" />
         </div>
@@ -88,6 +87,11 @@
         </div>
 
         <div id="map-button">
+            <el-select class="displayFilter" v-model="$store.state.displayByUser">
+                <el-option v-for="item in $store.state.displayOptions" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+            </el-select>
+
             <button @click="bigger()">+</button>
             <span></span>
             <button @click="smaller()">-</button>
@@ -725,7 +729,13 @@ export default {
 
 /* 操作栏的放大缩小按钮 */
 #map-button {
-    margin: 0 17px;
+    margin: 0px 0px 0px 15px;
+}
+
+/* 地图选项 */
+#map-button .displayFilter {
+    margin: 0px 15px 0px 0px;
+    width: 100px;
 }
 
 /* 缩略图 */

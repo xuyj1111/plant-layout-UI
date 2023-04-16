@@ -72,6 +72,11 @@ export default {
         },
         // 鼠标点击
         handleClick(e) {
+            const displayOptionsConst = ['all', 'zt1', 'zt2', 'zt3', 'improve', 'provide'];
+            this.$store.state.displayOptions = null;
+            if (displayOptionsConst.indexOf(this.$store.state.displayByUser) < 0) {
+                this.$store.state.displayByUser = 'all';
+            }
             if (e.target.id == 'logout') {
                 this.$emit('removeResizeEvent');
                 this.$router.push('/logout');
@@ -80,6 +85,7 @@ export default {
                     message: `登出系统`,
                     type: 'warning'
                 });
+                this.$store.state.displayByUser = 'all';
             } else {
                 // 只有下面这样写才能修改，无法修改“...mapState(['plant'])”引入的 plant
                 this.$store.state.plant = e.target.id;

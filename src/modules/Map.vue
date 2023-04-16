@@ -121,6 +121,8 @@ export default {
             this.$refs['infobar'].updateForm()
             // 问题点表单数据更新
             this.$refs['infobar'].setProblemCount();
+            // 地图选项赋值
+            this.setDisplayOptions();
         },
         // 画地图 + 缩略图
         draw() {
@@ -179,6 +181,34 @@ export default {
             if (this.$store.state.isAddWindowEvent) {
                 window.removeEventListener("resize", this.resizeWindowEvent);
                 this.$store.state.isAddWindowEvent = false;
+            }
+        },
+        // 地图选项赋值
+        setDisplayOptions() {
+            if (this.$store.state.displayOptions == null) {
+                this.$store.state.displayOptions = [{
+                    value: 'all',
+                    label: '所有问题'
+                }, {
+                    value: 'zt1',
+                    label: '保全'
+                }, {
+                    value: 'zt2',
+                    label: '组装技术'
+                }, {
+                    value: 'zt3',
+                    label: '加工技术'
+                }, {
+                    value: 'improve',
+                    label: '改善班'
+                }, {
+                    value: 'provide',
+                    label: '供给中心'
+                }];
+                this.$store.state.displayOptions.push({
+                    value: this.$store.state.plant,
+                    label: this.$refs['infobar'].USER_VALUE[this.$store.state.plant]
+                });
             }
         }
     }
