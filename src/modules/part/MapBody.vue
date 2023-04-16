@@ -144,7 +144,8 @@ export default {
             // 获取地图groupBy count
             await this.$axiosInstance.get("/plant/problems/groupby", {
                 params: {
-                    plant: this.$store.state.plant
+                    plant: this.$store.state.plant,
+                    option: this.$store.state.displayByUser
                 }
             }).then(function (response) {
                 for (let data of response.data) {

@@ -98,6 +98,10 @@ export default {
             this.init();
             this.$store.commit('saveStateToStorage');
         });
+        // 监听displayByUser变量
+        this.$watch("$store.state.displayByUser", (newVal, oldVal) => {
+            this.init();
+        });
     },
     /**
      * 切换地图时进入
@@ -109,6 +113,8 @@ export default {
     },
     methods: {
         async init() {
+            // 地图选项赋值
+            this.setDisplayOptions();
             // 地图选项（sidebar.currentId）刷新
             this.$refs['sidebar'].handleMouseLeave();
             // 地图数据（state.shapes）刷新
@@ -121,8 +127,6 @@ export default {
             this.$refs['infobar'].updateForm()
             // 问题点表单数据更新
             this.$refs['infobar'].setProblemCount();
-            // 地图选项赋值
-            this.setDisplayOptions();
         },
         // 画地图 + 缩略图
         draw() {
