@@ -30,19 +30,19 @@
             </el-descriptions>
             <el-descriptions title="问题点" :column="1" border>
                 <el-descriptions-item label="总数" label-align="right" align="center" width="100px">
-                    {{ formMsg.problem.count }}
+                    <el-tag size="small" type="info">{{ formMsg.problem.count }}</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="需协助" label-align="right" align="center" width="100px">
-                    <span style="color: red">{{ formMsg.problem.needHelpAndUnfinished }}</span>
-                    <span> / </span>
-                    <span style="color: #EEB422">{{ formMsg.problem.needHelpAndReview }}</span>
-                    <span> / </span>
-                    <span style="color: green">{{ formMsg.problem.needHelpAndfinished }}</span>
+                    <el-tag size="small" type="danger">{{ formMsg.problem.needHelpAndUnfinished }}</el-tag>
+                    <span>&nbsp;</span>
+                    <el-tag size="small" type="warning">{{ formMsg.problem.needHelpAndReview }}</el-tag>
+                    <span>&nbsp;</span>
+                    <el-tag size="small" type="success">{{ formMsg.problem.needHelpAndfinished }}</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="无需协助" label-align="right" align="center" width="100px">
-                    <span style="color: red">{{ formMsg.problem.noHelpAndUnfinished }}</span>
-                    <span> / </span>
-                    <span style="color: green">{{ formMsg.problem.noHelpAndfinished }}</span>
+                    <el-tag size="small" type="danger">{{ formMsg.problem.noHelpAndUnfinished }}</el-tag>
+                    <span>&nbsp;</span>
+                    <el-tag size="small" type="success">{{ formMsg.problem.noHelpAndfinished }}</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
                     <el-tag size="small">{{ (formMsg.problem.count != 0) ?
@@ -88,7 +88,8 @@
 
         <div id="map-button">
             <el-select class="displayFilter" v-model="$store.state.displayByUser">
-                <el-option v-for="item in $store.state.displayOptions" :key="item.value" :label="item.label" :value="item.value">
+                <el-option v-for="item in $store.state.displayOptions" :key="item.value" :label="item.label"
+                    :value="item.value">
                 </el-option>
             </el-select>
 
@@ -366,115 +367,80 @@ export default {
             this.$refs[formName].validate((valid) => {
                 if (valid) {
                     if (this.$store.state.choose == '') {
-                        if (!confirm('你确定要添加此设备吗？')) {
-                            // 否 跳出
-                            return;
-                        }
-                        // 判断设备编号 + 岗位号是否存在
-                        if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
+                        this.$confirm('是否要添加此设备吗？', '提示', {
+                            confirmButtonText: '添加',
+                            confirmButtonClass: 'greenClass',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            // 判断设备编号 + 岗位号是否存在
+                            if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
+                                this.$message({
+                                    showClose: true,
+                                    message: '该设备编号 + 岗位号已存在！添加失败！',
+                                    type: 'error'
+                                });
+                            }
+                            else if (this.verifyForm()) {
+                                this.$store.state.shapes.set(this.$store.state.choose, {
+                                    deviceNum: this.formLabel.deviceNum,
+                                    stationNum: this.formLabel.stationNum,
+                                    coordX: this.formLabel.coordX,
+                                    coordY: this.formLabel.coordY,
+                                    width: this.formLabel.width,
+                                    height: this.formLabel.height,
+                                    conveyor: this.formLabel.conveyor
+                                });
+                                this.updatePlantData().then(data => {
+                                    this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                                    this.$message({
+                                        showClose: true,
+                                        message: '添加设备成功！',
+                                        type: 'success'
+                                    });
+                                    this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                                })
+                            }
+                        }).catch(() => {
                             this.$message({
-                                showClose: true,
-                                message: '该设备编号 + 岗位号已存在！添加失败！',
-                                type: 'error'
+                                type: 'info',
+                                message: '取消操作'
                             });
-                            return;
-                        }
+                        });
                     } else {
-                        if (!confirm('你确定要更新此设备吗？')) {
-                            // 否 跳出
-                            return;
-                        }
-                    }
-                    // 坐标X、Y、width、height是否都是数字
-                    if (!this.isNumeric(this.formLabel.coordX)) {
-                        this.$message({
-                            showClose: true,
-                            message: '坐标X不是数字！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    if (!this.isNumeric(this.formLabel.coordY)) {
-                        this.$message({
-                            showClose: true,
-                            message: '坐标Y不是数字！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    if (!this.isNumeric(this.formLabel.width)) {
-                        this.$message({
-                            showClose: true,
-                            message: '宽度不是数字！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    if (!this.isNumeric(this.formLabel.height)) {
-                        this.$message({
-                            showClose: true,
-                            message: '高度不是数字！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    // x+width不能超过580，y+height不能超过380
-                    if ((parseFloat(this.formLabel.coordX) + parseFloat(this.formLabel.width)) > 580) {
-                        this.$message({
-                            showClose: true,
-                            message: '坐标X + 宽度不可超过580！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    if ((parseFloat(this.formLabel.coordY) + parseFloat(this.formLabel.height)) > 380) {
-                        this.$message({
-                            showClose: true,
-                            message: '坐标Y + 高度不可超过380！操作失败！',
-                            type: 'error'
-                        });
-                        return;
-                    }
-                    // 添加/更新设备操作
-                    if (this.$store.state.choose == '') {
-                        this.$store.state.shapes.set(this.$store.state.choose, {
-                            deviceNum: this.formLabel.deviceNum,
-                            stationNum: this.formLabel.stationNum,
-                            coordX: this.formLabel.coordX,
-                            coordY: this.formLabel.coordY,
-                            width: this.formLabel.width,
-                            height: this.formLabel.height,
-                            conveyor: this.formLabel.conveyor
-                        });
-                        this.updatePlantData().then(data => {
-                            this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
+                        this.$confirm('是否要更新此设备吗？', '提示', {
+                            confirmButtonText: '更新',
+                            confirmButtonClass: 'greenClass',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            if (this.verifyForm()) {
+                                // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
+                                // 只有修改操作要手动刷新地图
+                                this.$store.state.shapes.set(this.$store.state.choose, {
+                                    deviceNum: this.formLabel.deviceNum,
+                                    stationNum: this.formLabel.stationNum,
+                                    coordX: this.formLabel.coordX,
+                                    coordY: this.formLabel.coordY,
+                                    width: this.formLabel.width,
+                                    height: this.formLabel.height,
+                                    conveyor: this.formLabel.conveyor
+                                });
+                                this.updatePlantData().then(data => {
+                                    this.$message({
+                                        showClose: true,
+                                        message: '修改设备成功！',
+                                        type: 'success'
+                                    });
+                                    this.$emit('init');
+                                })
+                            }
+                        }).catch(() => {
                             this.$message({
-                                showClose: true,
-                                message: '添加设备成功！',
-                                type: 'success'
+                                type: 'info',
+                                message: '取消操作'
                             });
-                            this.$store.state.choose = this.formLabel.deviceNum + '+' + this.formLabel.stationNum;
-                        })
-                    } else {
-                        // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
-                        // 只有修改操作要手动刷新地图
-                        this.$store.state.shapes.set(this.$store.state.choose, {
-                            deviceNum: this.formLabel.deviceNum,
-                            stationNum: this.formLabel.stationNum,
-                            coordX: this.formLabel.coordX,
-                            coordY: this.formLabel.coordY,
-                            width: this.formLabel.width,
-                            height: this.formLabel.height,
-                            conveyor: this.formLabel.conveyor
                         });
-                        this.updatePlantData().then(data => {
-                            this.$message({
-                                showClose: true,
-                                message: '修改设备成功！',
-                                type: 'success'
-                            });
-                            this.$emit('init');
-                        })
                     }
                 }
             });
@@ -498,31 +464,38 @@ export default {
                         this.formLabel.width = '';
                         this.formLabel.height = '';
                         this.formLabel.conveyor = '';
-                        return;
                     } else {
-                        if (!confirm('你确定要删除此设备吗？')) {
-                            // 否 跳出
-                            return;
-                        }
-                    }
-                    this.$store.state.shapes.delete(this.$store.state.choose);
-                    this.updatePlantData().then(data => {
-                        this.$message({
-                            showClose: true,
-                            message: '删除设备成功！',
-                            type: 'success'
+                        this.$confirm('是否要删除此设备吗？', '提示', {
+                            confirmButtonText: '删除',
+                            confirmButtonClass: 'redClass',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            this.$store.state.shapes.delete(this.$store.state.choose);
+                            this.updatePlantData().then(data => {
+                                this.$message({
+                                    showClose: true,
+                                    message: '删除设备成功！',
+                                    type: 'success'
+                                });
+                                this.$store.state.choose = '';
+                                this.formMsg.deviceNum = '';
+                                this.formMsg.stationNum = '';
+                                this.formLabel.deviceNum = '';
+                                this.formLabel.stationNum = '';
+                                this.formLabel.coordX = '';
+                                this.formLabel.coordY = '';
+                                this.formLabel.width = '';
+                                this.formLabel.height = '';
+                                this.formLabel.conveyor = '';
+                            })
+                        }).catch(() => {
+                            this.$message({
+                                type: 'info',
+                                message: '取消操作'
+                            });
                         });
-                        this.$store.state.choose = '';
-                        this.formMsg.deviceNum = '';
-                        this.formMsg.stationNum = '';
-                        this.formLabel.deviceNum = '';
-                        this.formLabel.stationNum = '';
-                        this.formLabel.coordX = '';
-                        this.formLabel.coordY = '';
-                        this.formLabel.width = '';
-                        this.formLabel.height = '';
-                        this.formLabel.conveyor = '';
-                    })
+                    }
                 }
             });
         },
@@ -564,6 +537,11 @@ export default {
                 }, {});
                 // 判断是否存在
                 if (values[this.search] != null) {
+                    this.$message({
+                        showClose: true,
+                        message: '已选中设备！',
+                        type: 'success'
+                    });
                     this.$store.state.choose = values[this.search];
                 } else {
                     this.$message({
@@ -593,7 +571,13 @@ export default {
                         break;
                     }
                 }
-                if (!flag) {
+                if (flag) {
+                    this.$message({
+                        showClose: true,
+                        message: '已选中设备！',
+                        type: 'success'
+                    });
+                } else {
                     this.$message({
                         showClose: true,
                         message: '不存在该设备！',
@@ -662,6 +646,60 @@ export default {
                     type: 'warning'
                 });
             }
+        },
+        // 校验表单
+        verifyForm() {
+            // 坐标X、Y、width、height是否都是数字
+            if (!this.isNumeric(this.formLabel.coordX)) {
+                this.$message({
+                    showClose: true,
+                    message: '坐标X不是数字！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            if (!this.isNumeric(this.formLabel.coordY)) {
+                this.$message({
+                    showClose: true,
+                    message: '坐标Y不是数字！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            if (!this.isNumeric(this.formLabel.width)) {
+                this.$message({
+                    showClose: true,
+                    message: '宽度不是数字！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            if (!this.isNumeric(this.formLabel.height)) {
+                this.$message({
+                    showClose: true,
+                    message: '高度不是数字！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            // x+width不能超过580，y+height不能超过380
+            if ((parseFloat(this.formLabel.coordX) + parseFloat(this.formLabel.width)) > 580) {
+                this.$message({
+                    showClose: true,
+                    message: '坐标X + 宽度不可超过580！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            if ((parseFloat(this.formLabel.coordY) + parseFloat(this.formLabel.height)) > 380) {
+                this.$message({
+                    showClose: true,
+                    message: '坐标Y + 高度不可超过380！操作失败！',
+                    type: 'error'
+                });
+                return false;
+            }
+            return true;
         },
         // 判断字符串是否为空
         isEmpty(str) {

@@ -58,7 +58,9 @@
                 </el-table-column>
                 <el-table-column prop="status" label="状态" fixed="right">
                     <template v-slot="{ row, $index }">
-                        <el-button v-if="row.status == '已完成'" type="success" disabled>{{ row.status }}</el-button>
+                        <el-button v-if="row.status == '已完成'" type="success" @click="handleFinished(row.id, $index)"
+                            :disabled="$store.state.user != 'root'">{{
+                                row.status }}</el-button>
                         <el-button v-else-if="row.status == '审核中'" type="warning" @click="handleReview(row.id, $index)">{{
                             row.status }}</el-button>
                         <el-button v-else-if="row.status == '未完成'" type="danger"
@@ -243,66 +245,51 @@ export default {
         setPage(val) {
             this.page = val - 1;
         },
+        // 点击“已完成”，只有root才可点击
+        handleFinished(id, index) {
+            this.$confirm('是否退回问题点？', '提示', {
+                confirmButtonText: '退回',
+                confirmButtonClass: 'redClass',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.put("/plant/problem", {}, {
+                        params: {
+                            id: id,
+                            status: 'unfinished'
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(() => {
+                    this.tableData[index]['status'] = '未完成';
+                })
+                this.$message({
+                    type: 'success',
+                    message: '已退回!'
+                });
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '取消操作'
+                });
+            });
+        },
         // 点击“审核中”
         handleReview(id, index) {
             if (this.$store.state.role == 'root' || (this.$store.state.role == 'local' &&
                 this.$store.state.plant == this.$store.state.user)) {
-                if (!confirm('是否完成此问题点？')) {
-                    // 否 跳出
-                    return;
-                }
-                new Promise((resolve, reject) => {
-                    this.$axiosInstance.put("/plant/problem", {}, {
-                        params: {
-                            id: id,
-                            status: 'finished'
-                        }
-                    }).then(function (response) {
-                        resolve(response.data);
-                    }).catch(function (error) {
-                        reject(error);
-                    })
-                }).then(() => {
-                    this.tableData[index]['status'] = '已完成';
-                })
-            } else {
-                this.$message({
-                    showClose: true,
-                    message: '当前账号没有权限',
+                this.$confirm('请审核问题点？', '提示', {
+                    distinguishCancelAndClose: true,
+                    confirmButtonText: '通过',
+                    confirmButtonClass: 'greenClass',
+                    cancelButtonText: '退回',
+                    cancelButtonClass: 'redClass',
                     type: 'warning'
-                });
-            }
-        },
-        // 点击“未完成”
-        handleUnfinished(id, isNeedHelp, index) {
-            if (this.$store.state.role == 'root') {
-                if (!confirm('是否完成此问题点？')) {
-                    // 否 跳出
-                    return;
-                }
-                new Promise((resolve, reject) => {
-                    this.$axiosInstance.put("/plant/problem", {}, {
-                        params: {
-                            id: id,
-                            status: 'finished'
-                        }
-                    }).then(function (response) {
-                        resolve(response.data);
-                    }).catch(function (error) {
-                        reject(error);
-                    })
                 }).then(() => {
-                    this.tableData[index]['status'] = '已完成';
-                })
-            }
-            else if (this.$store.state.role == 'local' &&
-                this.$store.state.plant == this.$store.state.user) {
-                // 不需要协助，直接完成
-                if (isNeedHelp == '否') {
-                    if (!confirm('是否完成此问题点？')) {
-                        // 否 跳出
-                        return;
-                    }
                     new Promise((resolve, reject) => {
                         this.$axiosInstance.put("/plant/problem", {}, {
                             params: {
@@ -317,6 +304,113 @@ export default {
                     }).then(() => {
                         this.tableData[index]['status'] = '已完成';
                     })
+                    this.$message({
+                        type: 'success',
+                        message: '通过成功!'
+                    });
+                }).catch(action => {
+                    if (action == 'cancel') {
+                        new Promise((resolve, reject) => {
+                            this.$axiosInstance.put("/plant/problem", {}, {
+                                params: {
+                                    id: id,
+                                    status: 'unfinished'
+                                }
+                            }).then(function (response) {
+                                resolve(response.data);
+                            }).catch(function (error) {
+                                reject(error);
+                            })
+                        }).then(() => {
+                            this.tableData[index]['status'] = '未完成';
+                        })
+                        this.$message({
+                            type: 'error',
+                            message: '退回成功!'
+                        });
+                    } else if (action == 'close') {
+                        this.$message({
+                            type: 'info',
+                            message: '取消操作'
+                        });
+                    }
+                });
+            } else {
+                this.$message({
+                    showClose: true,
+                    message: '当前账号没有权限',
+                    type: 'warning'
+                });
+            }
+        },
+        // 点击“未完成”
+        handleUnfinished(id, isNeedHelp, index) {
+            if (this.$store.state.role == 'root') {
+                this.$confirm('是否完成问题点？', '提示', {
+                    confirmButtonText: '完成',
+                    confirmButtonClass: 'greenClass',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    new Promise((resolve, reject) => {
+                        this.$axiosInstance.put("/plant/problem", {}, {
+                            params: {
+                                id: id,
+                                status: 'finished'
+                            }
+                        }).then(function (response) {
+                            resolve(response.data);
+                        }).catch(function (error) {
+                            reject(error);
+                        })
+                    }).then(() => {
+                        this.tableData[index]['status'] = '已完成';
+                    })
+                    this.$message({
+                        type: 'success',
+                        message: '已完成!'
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '取消操作'
+                    });
+                });
+            }
+            else if (this.$store.state.role == 'local' &&
+                this.$store.state.plant == this.$store.state.user) {
+                // 不需要协助，直接完成
+                if (isNeedHelp == '否') {
+                    this.$confirm('是否完成问题点？', '提示', {
+                        confirmButtonText: '完成',
+                        confirmButtonClass: 'greenClass',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        new Promise((resolve, reject) => {
+                            this.$axiosInstance.put("/plant/problem", {}, {
+                                params: {
+                                    id: id,
+                                    status: 'finished'
+                                }
+                            }).then(function (response) {
+                                resolve(response.data);
+                            }).catch(function (error) {
+                                reject(error);
+                            })
+                        }).then(() => {
+                            this.tableData[index]['status'] = '已完成';
+                        })
+                        this.$message({
+                            type: 'success',
+                            message: '已完成!'
+                        });
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '取消操作'
+                        });
+                    });
                 } else {
                     // 需要协助问题点，不能点击
                     this.$message({
@@ -327,24 +421,37 @@ export default {
                 }
             } else if (this.$store.state.role == 'assist' &&
                 this.USER_VALUE[this.$store.state.user] == isNeedHelp) {
-                if (!confirm('是否提交审核此问题点？')) {
-                    // 否 跳出
-                    return;
-                }
-                new Promise((resolve, reject) => {
-                    this.$axiosInstance.put("/plant/problem", {}, {
-                        params: {
-                            id: id,
-                            status: 'review'
-                        }
-                    }).then(function (response) {
-                        resolve(response.data);
-                    }).catch(function (error) {
-                        reject(error);
-                    })
+
+                this.$confirm('是否提交审核？', '提示', {
+                    confirmButtonText: '提交',
+                    confirmButtonClass: 'yellowClass',
+                    cancelButtonText: '取消',
+                    type: 'warning'
                 }).then(() => {
-                    this.tableData[index]['status'] = '审核中';
-                })
+                    new Promise((resolve, reject) => {
+                        this.$axiosInstance.put("/plant/problem", {}, {
+                            params: {
+                                id: id,
+                                status: 'review'
+                            }
+                        }).then(function (response) {
+                            resolve(response.data);
+                        }).catch(function (error) {
+                            reject(error);
+                        })
+                    }).then(() => {
+                        this.tableData[index]['status'] = '审核中';
+                    })
+                    this.$message({
+                        type: 'success',
+                        message: '已提交!'
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '取消操作'
+                    });
+                });
             } else {
                 this.$message({
                     showClose: true,

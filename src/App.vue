@@ -40,4 +40,19 @@ body {
   display: flex;
   flex-direction: row;
 }
+
+.greenClass {
+    background: #67C23A !important;
+    color: #fff !important;
+}
+
+.yellowClass {
+    background: #E6A23C !important;
+    color: #fff !important;
+}
+
+.redClass {
+    background: #F56C6C !important;
+    color: #fff !important;
+}
 </style>
