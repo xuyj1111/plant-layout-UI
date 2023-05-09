@@ -414,7 +414,15 @@ export default {
                             cancelButtonText: '取消',
                             type: 'warning'
                         }).then(() => {
-                            if (this.verifyForm()) {
+                            // 判断设备编号 + 岗位号是否存在
+                            if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
+                                this.$message({
+                                    showClose: true,
+                                    message: '该设备编号 + 岗位号已存在！更新失败！',
+                                    type: 'error'
+                                });
+                            }
+                            else if (this.verifyForm()) {
                                 // 添加操作会自动刷新地图，因为choose在disMap.vue中监控变动
                                 // 只有修改操作要手动刷新地图
                                 this.$store.state.shapes.set(this.$store.state.choose, {
