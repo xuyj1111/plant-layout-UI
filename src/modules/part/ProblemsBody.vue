@@ -246,13 +246,13 @@ export default {
             } else if (this.$store.state.problemPage == 'unmatch') {
                 // 未匹配问题点查询
                 new Promise((resolve, reject) => {
-                    this.$axiosInstance.get("/plant/problems/unmatch/count", {
-                        params: {
-                            plant: this.$store.state.plant,
-                            status: this.status == 'all' ? null : this.status,
-                            search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
-                        }
+                    this.$axiosInstance.post("/plant/problems/unmatch/count", {
+                        plant: this.$store.state.plant,
+                        status: this.status == 'all' ? null : this.status,
+                        search: this.isEmpty(this.search) ? null : this.search,
+                        department: this.department == 'all' ? null : this.department,
+                        // 所有设备编号+岗位号
+                        allDevice: this.buildAllDeviceNumAndStationNum()
                     }).then(function (response) {
                         resolve(response.data['count']);
                     }).catch(function (error) {
@@ -311,15 +311,15 @@ export default {
             } else if (this.$store.state.problemPage == 'unmatch') {
                 // 未匹配问题点查询
                 new Promise((resolve, reject) => {
-                    this.$axiosInstance.get("/plant/problems/unmatch", {
-                        params: {
-                            plant: this.$store.state.plant,
-                            status: this.status == 'all' ? null : this.status,
-                            page: this.page,
-                            size: 5,
-                            search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
-                        }
+                    this.$axiosInstance.post("/plant/problems/unmatch", {
+                        plant: this.$store.state.plant,
+                        status: this.status == 'all' ? null : this.status,
+                        page: this.page,
+                        size: 5,
+                        search: this.isEmpty(this.search) ? null : this.search,
+                        department: this.department == 'all' ? null : this.department,
+                        // 所有设备编号+岗位号
+                        allDevice: this.buildAllDeviceNumAndStationNum()
                     }).then(function (response) {
                         resolve(response.data);
                     }).catch(function (error) {
@@ -555,6 +555,18 @@ export default {
                 return true;
             }
             return false;
+        },
+        // 构建所有设备编号+岗位号的in sql语句
+        buildAllDeviceNumAndStationNum() {
+            let stringBuilder = [];
+            this.$store.state.shapes.forEach((shape, key) => {
+                stringBuilder.push('(\''
+                    + shape['deviceNum']
+                    + '\',\''
+                    + (this.isEmpty(shape['stationNum']) ? '(跳过)' : shape['stationNum'])
+                    + '\')');
+            });
+            return stringBuilder.join(', ');
         }
     }
 }
