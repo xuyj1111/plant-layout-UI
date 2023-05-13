@@ -19,15 +19,22 @@
 
         <div id="operation">
             <!-- 搜索框 -->
-            <span class="search">
-                <el-input v-model.trim="search" class="w-50 m-2" placeholder='支持搜索序号、提交人、问题点描述'>
-                    <template #prefix>
-                        <el-icon class="el-input__icon">
-                            <search />
-                        </el-icon>
-                    </template>
-                </el-input>
-            </span>
+            <el-tooltip class="item" effect="dark"
+                :content="$store.state.problemPage == 'device' ? '支持搜索序号、提交人、问题点描述' : '支持搜索序号、设备编号、岗位号、提交人、问题点描述'"
+                placement="bottom-start">
+                <span class="search">
+                    <el-input v-model.trim="search" class="w-50 m-2">
+                        <template #prefix>
+                            <el-icon class="el-input__icon">
+                                <search />
+                            </el-icon>
+                        </template>
+                    </el-input>
+                </span>
+            </el-tooltip>
+            <el-date-picker class="datetimeRange" v-model="datetimeRange" type="datetimerange" range-separator="至"
+                start-placeholder="开始日期" end-placeholder="结束日期">
+            </el-date-picker>
             <!-- 状态选项 -->
             <span class="statusFilter">
                 <el-select v-model="status">
@@ -48,6 +55,10 @@
             <el-table :data="tableData" stripe fixed style="width: 100%" :cell-style="{ 'text-align': 'center' }"
                 :header-cell-style="{ background: '#10472D', color: 'white', 'line-hight': '50px', 'text-align': 'center' }">
                 <el-table-column prop="id" label="序号" width="120">
+                </el-table-column>
+                <el-table-column v-if="$store.state.problemPage != 'device'" prop="deviceNum" label="设备编号" width="120">
+                </el-table-column>
+                <el-table-column v-if="$store.state.problemPage != 'device'" prop="stationNum" label="岗位号" width="120">
                 </el-table-column>
                 <el-table-column prop="name" label="提交人" width="120">
                 </el-table-column>
@@ -89,6 +100,7 @@
 
 <script>
 import { Search } from '@element-plus/icons-vue'
+import moment from 'moment'
 
 export default {
     name: 'ProblemsMap',
@@ -159,7 +171,8 @@ export default {
                 'pulley': '带轮',
                 'differential': '差速器',
                 'heat': '热处理'
-            }
+            },
+            datetimeRange: null
         }
     },
     mounted() {
@@ -190,6 +203,12 @@ export default {
             this.tableData = [];
             this.setTableData();
         });
+        // 监听datetimeRange变量
+        this.$watch("datetimeRange", (newVal, oldVal) => {
+            this.tableData = [];
+            this.setProblemsCount();
+            this.setTableData();
+        });
         this.setProblemsCount();
         this.setTableData();
     },
@@ -205,6 +224,14 @@ export default {
          * 问题点count赋值
          */
         setProblemsCount() {
+            // 开始时间、结束时间
+            let startDatetime = null;
+            let endDatetime = null;
+            if (this.datetimeRange != null) {
+                startDatetime = moment(this.datetimeRange[0]).format('YYYY-MM-DD HH:mm:ss');
+                endDatetime = moment(this.datetimeRange[1]).format('YYYY-MM-DD HH:mm:ss');
+            }
+
             if (this.$store.state.problemPage == 'device') {
                 // 设备问题点查询
                 new Promise((resolve, reject) => {
@@ -215,7 +242,9 @@ export default {
                             stationNum: this.stationNum,
                             status: this.status == 'all' ? null : this.status,
                             search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
+                            department: this.department == 'all' ? null : this.department,
+                            startDatetime: startDatetime,
+                            endDatetime: endDatetime
                         }
                     }).then(function (response) {
                         resolve(response.data['count']);
@@ -233,7 +262,9 @@ export default {
                             plant: this.$store.state.plant,
                             status: this.status == 'all' ? null : this.status,
                             search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
+                            department: this.department == 'all' ? null : this.department,
+                            startDatetime: startDatetime,
+                            endDatetime: endDatetime
                         }
                     }).then(function (response) {
                         resolve(response.data['count']);
@@ -252,7 +283,9 @@ export default {
                         search: this.isEmpty(this.search) ? null : this.search,
                         department: this.department == 'all' ? null : this.department,
                         // 所有设备编号+岗位号
-                        allDevice: this.buildAllDeviceNumAndStationNum()
+                        allDevice: this.buildAllDeviceNumAndStationNum(),
+                        startDatetime: startDatetime,
+                        endDatetime: endDatetime
                     }).then(function (response) {
                         resolve(response.data['count']);
                     }).catch(function (error) {
@@ -267,6 +300,14 @@ export default {
          * 问题点数据赋值
          */
         setTableData() {
+            // 开始时间、结束时间
+            let startDatetime = null;
+            let endDatetime = null;
+            if (this.datetimeRange != null) {
+                startDatetime = moment(this.datetimeRange[0]).format('YYYY-MM-DD HH:mm:ss');
+                endDatetime = moment(this.datetimeRange[1]).format('YYYY-MM-DD HH:mm:ss');
+            }
+
             if (this.$store.state.problemPage == 'device') {
                 new Promise((resolve, reject) => {
                     this.$axiosInstance.get("/plant/problems", {
@@ -278,7 +319,9 @@ export default {
                             page: this.page,
                             size: 5,
                             search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
+                            department: this.department == 'all' ? null : this.department,
+                            startDatetime: startDatetime,
+                            endDatetime: endDatetime
                         }
                     }).then(function (response) {
                         resolve(response.data);
@@ -298,7 +341,9 @@ export default {
                             page: this.page,
                             size: 5,
                             search: this.isEmpty(this.search) ? null : this.search,
-                            department: this.department == 'all' ? null : this.department
+                            department: this.department == 'all' ? null : this.department,
+                            startDatetime: startDatetime,
+                            endDatetime: endDatetime
                         }
                     }).then(function (response) {
                         resolve(response.data);
@@ -319,7 +364,9 @@ export default {
                         search: this.isEmpty(this.search) ? null : this.search,
                         department: this.department == 'all' ? null : this.department,
                         // 所有设备编号+岗位号
-                        allDevice: this.buildAllDeviceNumAndStationNum()
+                        allDevice: this.buildAllDeviceNumAndStationNum(),
+                        startDatetime: startDatetime,
+                        endDatetime: endDatetime
                     }).then(function (response) {
                         resolve(response.data);
                     }).catch(function (error) {
@@ -596,10 +643,17 @@ export default {
 }
 
 .body #operation .search {
-    width: 280px;
+    width: 200px;
     display: inline-block;
     position: relative;
     left: 20px;
+}
+
+.body #operation .datetimeRange {
+    display: inline-block;
+    position: relative;
+    left: 30px;
+    vertical-align: middle;
 }
 
 .body #operation .departFilter {
