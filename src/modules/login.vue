@@ -61,6 +61,7 @@ export default {
                         that.$store.state.map.width = 870;
                         that.$store.state.map.height = 570;
                         that.$store.state.displayByUser = 'all';
+                        that.$store.state.problemPage = 'all';
                         sessionStorage.setItem('isLogin', 'true');
                         that.$store.commit('saveStateToStorage');
                         that.$router.push('/map');

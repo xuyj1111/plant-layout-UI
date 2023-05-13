@@ -38,6 +38,29 @@ export default {
                 }
             };
         });
+
+        this.$refs['map'].addEventListener('dblclick', function (e) {
+            const mapContext = that.$refs['map'].getContext("2d");
+            const multiple = (1.0 + 0.05 * that.map.per);
+            // 用foreach，无法使用break或return跳出循环，因此使用for
+            for (let [key, value] of that.$store.state.shapes) {
+                mapContext.beginPath();
+                mapContext.rect(
+                    value["coordX"] * multiple,
+                    value["coordY"] * multiple,
+                    value["width"] * multiple,
+                    value["height"] * multiple
+                );
+                if (mapContext.isPointInPath(e.offsetX, e.offsetY)) {
+                    that.$store.state.choose = key;
+                    that.toProblems();
+                    break;
+                } else {
+                    that.$store.state.choose = '';
+                }
+            };
+        });
+
         // 监听滚动条
         this.$refs['section'].addEventListener(
             "scroll",
@@ -235,6 +258,13 @@ export default {
         // 判断字符串是否都是数字，包括最多只有1个小数点
         isNumeric(str) {
             return /^\d+(\.\d+)?$/.test(str);
+        },
+        // 跳转到问题点列表页
+        toProblems() {
+            this.$emit('removeResizeEvent');
+            this.$store.state.problemPage = 'device';
+            this.$store.commit('saveStateToStorage');
+            this.$router.push(this.$route.path + '/problems');
         }
     }
 }
@@ -256,6 +286,15 @@ export default {
     background-color: #ffffff;
     /* 设置透明度 */
     opacity: 0.5;
+
+    -webkit-user-select: none;
+    /* 禁止双击选中文字的Webkit浏览器（如Chrome和Safari） */
+    -moz-user-select: none;
+    /* 禁止双击选中文字的Firefox浏览器 */
+    -ms-user-select: none;
+    /* 禁止双击选中文字的Internet Explorer浏览器 */
+    user-select: none;
+    /* 通用的禁止双击选中文字的样式 */
 }
 
 /* 地图区域的画板 */

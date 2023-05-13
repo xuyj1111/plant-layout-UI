@@ -4,8 +4,14 @@
             <div class="element">
                 <el-link :underline="false" type="primary" id="link" @click="toMap">&lt;&nbsp;返回</el-link>
             </div>
-            <span class="element">{{ isEmpty(deviceNum) ? '' : `设备编号：${deviceNum}` }}</span>
-            <span class="element">{{ isEmpty(stationNum) ? '' : `岗位号：${stationNum}` }}</span>
+            <span v-if="$store.state.problemPage == 'device'" class="element">{{ isEmpty(deviceNum) ? '' :
+                `设备编号：${deviceNum}`
+            }}</span>
+            <span v-if="$store.state.problemPage == 'device'" class="element">{{ isEmpty(stationNum) ? '' :
+                `岗位号：${stationNum}`
+            }}</span>
+            <span v-else-if="$store.state.problemPage == 'all'" class="element">全部问题点列表</span>
+            <span v-else-if="$store.state.problemPage == 'unmatch'" class="element">未匹配问题点列表</span>
 
             <span id='account' class="element">{{ ROLE_VALUE[$store.state.role] }}
                 {{ USER_VALUE[$store.state.user] }}</span>
@@ -96,7 +102,7 @@ export default {
             search: '',
             statusOptions: [{
                 value: 'all',
-                label: '所有状态'
+                label: '全部状态'
             }, {
                 value: 'unfinished',
                 label: '未完成'
@@ -111,7 +117,7 @@ export default {
             department: 'all',
             departOptions: [{
                 value: 'all',
-                label: '所有部门'
+                label: '全部部门'
             }, {
                 value: 'ZT1-保全',
                 label: 'ZT1-保全'
@@ -190,6 +196,8 @@ export default {
     methods: {
         // 跳转到地图页
         toMap() {
+            this.$store.state.problemPage = 'all';
+            this.$store.commit('saveStateToStorage');
             this.$emit('toMap');
             this.$router.push(this.$route.path.replace(new RegExp("/problems$"), ""));
         },
@@ -197,49 +205,130 @@ export default {
          * 问题点count赋值
          */
         setProblemsCount() {
-            new Promise((resolve, reject) => {
-                this.$axiosInstance.get("/plant/problems/count", {
-                    params: {
-                        plant: this.$store.state.plant,
-                        deviceNum: this.deviceNum,
-                        stationNum: this.stationNum,
-                        status: this.status == 'all' ? null : this.status,
-                        search: this.isEmpty(this.search) ? null : this.search,
-                        department: this.department == 'all' ? null : this.department
-                    }
-                }).then(function (response) {
-                    resolve(response.data['count']);
-                }).catch(function (error) {
-                    reject(error);
+            if (this.$store.state.problemPage == 'device') {
+                // 设备问题点查询
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems/count", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            deviceNum: this.deviceNum,
+                            stationNum: this.stationNum,
+                            status: this.status == 'all' ? null : this.status,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data['count']);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.count = data;
                 })
-            }).then(data => {
-                this.count = data;
-            })
+            } else if (this.$store.state.problemPage == 'all') {
+                // 全部问题点查询
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems/count", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            status: this.status == 'all' ? null : this.status,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data['count']);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.count = data;
+                })
+            } else if (this.$store.state.problemPage == 'unmatch') {
+                // 未匹配问题点查询
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems/unmatch/count", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            status: this.status == 'all' ? null : this.status,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data['count']);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.count = data;
+                })
+            }
         },
         /**
          * 问题点数据赋值
          */
         setTableData() {
-            new Promise((resolve, reject) => {
-                this.$axiosInstance.get("/plant/problems", {
-                    params: {
-                        plant: this.$store.state.plant,
-                        deviceNum: this.deviceNum,
-                        stationNum: this.stationNum,
-                        status: this.status == 'all' ? null : this.status,
-                        page: this.page,
-                        size: 5,
-                        search: this.isEmpty(this.search) ? null : this.search,
-                        department: this.department == 'all' ? null : this.department
-                    }
-                }).then(function (response) {
-                    resolve(response.data);
-                }).catch(function (error) {
-                    reject(error);
+            if (this.$store.state.problemPage == 'device') {
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            deviceNum: this.deviceNum,
+                            stationNum: this.stationNum,
+                            status: this.status == 'all' ? null : this.status,
+                            page: this.page,
+                            size: 5,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.tableData = data;
                 })
-            }).then(data => {
-                this.tableData = data;
-            })
+            } else if (this.$store.state.problemPage == 'all') {
+                // 全部问题点查询
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            status: this.status == 'all' ? null : this.status,
+                            page: this.page,
+                            size: 5,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.tableData = data;
+                })
+            } else if (this.$store.state.problemPage == 'unmatch') {
+                // 未匹配问题点查询
+                new Promise((resolve, reject) => {
+                    this.$axiosInstance.get("/plant/problems/unmatch", {
+                        params: {
+                            plant: this.$store.state.plant,
+                            status: this.status == 'all' ? null : this.status,
+                            page: this.page,
+                            size: 5,
+                            search: this.isEmpty(this.search) ? null : this.search,
+                            department: this.department == 'all' ? null : this.department
+                        }
+                    }).then(function (response) {
+                        resolve(response.data);
+                    }).catch(function (error) {
+                        reject(error);
+                    })
+                }).then(data => {
+                    this.tableData = data;
+                })
+            }
         },
         // page赋值 
         setPage(val) {

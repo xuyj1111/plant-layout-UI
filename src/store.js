@@ -49,13 +49,19 @@ export default createStore({
         // window事件是否添加
         isAddWindowEvent: false,
         displayByUser: 'all',
-        displayOptions: null
+        displayOptions: null,
+        // 问题点页面
+        // 'device'：设备问题点界面，标题显示设备编号和岗位号，表不显示
+        // 'all'：全部问题点页面，标题显示“全部问题点列表”，表显示设备编号和岗位号
+        // 'unmatch'：未匹配问题点页面，标题显示“未匹配问题点列表”，表显示设备编号和岗位号
+        problemPage: 'all'
     },
     mutations: {
         // 保存到 sessionStorage 中
         saveStateToStorage(state) {
             console.log('>>> saveStateToStorage')
             sessionStorage.setItem('choose', state.choose)
+            sessionStorage.setItem('problemPage', state.problemPage)
             sessionStorage.setItem('user', state.user)
             sessionStorage.setItem('role', state.role)
         },
@@ -63,6 +69,7 @@ export default createStore({
         restoreStateFromStorage(state) {
             console.log('>>> restoreStateFromStorage');
             state.choose = sessionStorage.getItem('choose');
+            state.problemPage = sessionStorage.getItem('problemPage');
             state.user = sessionStorage.getItem('user');
             state.role = sessionStorage.getItem('role');
             console.log(state.plant);

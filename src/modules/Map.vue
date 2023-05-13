@@ -192,7 +192,7 @@ export default {
             if (this.$store.state.displayOptions == null) {
                 this.$store.state.displayOptions = [{
                     value: 'all',
-                    label: '所有问题'
+                    label: '全部'
                 }, {
                     value: 'zt1',
                     label: '保全'

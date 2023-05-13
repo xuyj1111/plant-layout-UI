@@ -17,6 +17,11 @@
             </el-input>
         </div>
         <div id="switch">
+            <el-select class="displayFilter" v-model="$store.state.displayByUser">
+                <el-option v-for="item in $store.state.displayOptions" :key="item.value" :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
             <el-switch ref="switch" v-model="switch_value" active-text="编辑信息" :disabled="$store.state.role != 'root'" />
         </div>
 
@@ -51,7 +56,10 @@
                 </el-descriptions-item>
             </el-descriptions>
 
-            <el-link :underline="false" type="primary" id="link" @click="toProblems">问题点详情>></el-link>
+            <div class="problemButton">
+                <el-button type="primary" @click="toProblems('all')" plain>全部问题</el-button>
+                <el-button type="warning" @click="toProblems('unmatch')" plain>未匹配问题</el-button>
+            </div>
         </div>
 
         <!-- 可编辑信息栏 -->
@@ -87,12 +95,6 @@
         </div>
 
         <div id="map-button">
-            <el-select class="displayFilter" v-model="$store.state.displayByUser">
-                <el-option v-for="item in $store.state.displayOptions" :key="item.value" :label="item.label"
-                    :value="item.value">
-                </el-option>
-            </el-select>
-
             <button @click="bigger()">+</button>
             <span></span>
             <button @click="smaller()">-</button>
@@ -641,19 +643,12 @@ export default {
                 })
             })
         },
-        // 跳转到问题点列表页
-        toProblems() {
-            // 选中才可以点击跳转
-            if (!this.isEmpty(this.$store.state.choose)) {
-                this.$emit('removeResizeEvent');
-                this.$router.push(this.$route.path + '/problems');
-            } else {
-                this.$message({
-                    showClose: true,
-                    message: '请选中设备',
-                    type: 'warning'
-                });
-            }
+        // 跳转到未匹配问题点列表页
+        toProblems(problemPage) {
+            this.$emit('removeResizeEvent');
+            this.$store.state.problemPage = problemPage;
+            this.$store.commit('saveStateToStorage');
+            this.$router.push(this.$route.path + '/problems');
         },
         // 校验表单
         verifyForm() {
@@ -753,35 +748,31 @@ export default {
 
 /* 编辑信息开关 */
 #switch {
-    margin-top: 10px;
+    margin: 10px 0 10px 10px;
     position: relative;
-    left: 110px;
+}
+
+/* 地图选项 */
+#switch .displayFilter {
+    margin-right: 10px;
+    width: 100px;
 }
 
 /* 信息区域/可编辑信息区域 */
 #info,
 #edit_info {
     width: 220px;
-    margin: 0px auto 0;
+    margin: 0px auto;
+    margin-bottom: 10px;
 }
 
-/* 问题点链接 */
-#link {
-    margin-bottom: 10px;
-    margin-top: 10px;
-    position: relative;
-    left: 110px;
+.problemButton {
+    margin-left: 10px;
 }
 
 /* 操作栏的放大缩小按钮 */
 #map-button {
     margin: 0px 0px 0px 15px;
-}
-
-/* 地图选项 */
-#map-button .displayFilter {
-    margin: 0px 15px 0px 0px;
-    width: 100px;
 }
 
 /* 缩略图 */

@@ -73,6 +73,7 @@ export default {
         // 鼠标点击
         handleClick(e) {
             this.$store.state.displayOptions = null;
+            this.$store.state.problemPage = 'all';
             if (e.target.id == 'logout') {
                 this.$emit('removeResizeEvent');
                 this.$router.push('/logout');
