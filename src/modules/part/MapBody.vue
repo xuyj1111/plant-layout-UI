@@ -93,11 +93,11 @@ export default {
              * 有审核的问题，显示黄色
              * 没有问题，传送带显示黑色 其他设备显示灰色
              */
-            if (shape['unfinishedCount'] > 0) {
+            if (shape['needHelpAndUnfinished'] > 0 || shape['noHelpAndUnfinished'] > 0) {
                 mapContext.fillStyle = "red";
                 mapContext.fill();
                 mapContext.stroke();
-            } else if (shape['reviewCount'] > 0) {
+            } else if (shape['needHelpAndReview'] > 0) {
                 mapContext.fillStyle = "yellow";
                 mapContext.fill();
                 mapContext.stroke();
@@ -174,8 +174,12 @@ export default {
                 for (let data of response.data) {
                     let shape = shapes.get(data['deviceNum'] + '+' + data['stationNum']);
                     if (shape != null) {
-                        shape['unfinishedCount'] = data['unfinishedCount'];
-                        shape['reviewCount'] = data['reviewCount'];
+                        shape['count'] = data['count'];
+                        shape['needHelpAndUnfinished'] = data['needHelpAndUnfinished'];
+                        shape['needHelpAndReview'] = data['needHelpAndReview'];
+                        shape['needHelpAndFinished'] = data['needHelpAndFinished'];
+                        shape['noHelpAndUnfinished'] = data['noHelpAndUnfinished'];
+                        shape['noHelpAndFinished'] = data['noHelpAndFinished'];
                     }
                 }
             }).catch(function (error) {

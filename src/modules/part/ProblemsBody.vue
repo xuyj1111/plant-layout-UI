@@ -145,9 +145,6 @@ export default {
             }, {
                 value: '供给中心',
                 label: '供给中心'
-            }, {
-                value: '否',
-                label: '否'
             }],
             tableData: [],
             count: 0,
@@ -208,6 +205,11 @@ export default {
             this.tableData = [];
             this.setProblemsCount();
             this.setTableData();
+        });
+        // 部门，动态赋值
+        this.departOptions.push({
+            value: '否',
+            label: this.USER_VALUE[this.$store.state.plant]
         });
         this.setProblemsCount();
         this.setTableData();

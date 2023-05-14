@@ -42,16 +42,16 @@
                     <span>&nbsp;</span>
                     <el-tag size="small" type="warning">{{ formMsg.problem.needHelpAndReview }}</el-tag>
                     <span>&nbsp;</span>
-                    <el-tag size="small" type="success">{{ formMsg.problem.needHelpAndfinished }}</el-tag>
+                    <el-tag size="small" type="success">{{ formMsg.problem.needHelpAndFinished }}</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="无需协助" label-align="right" align="center" width="100px">
                     <el-tag size="small" type="danger">{{ formMsg.problem.noHelpAndUnfinished }}</el-tag>
                     <span>&nbsp;</span>
-                    <el-tag size="small" type="success">{{ formMsg.problem.noHelpAndfinished }}</el-tag>
+                    <el-tag size="small" type="success">{{ formMsg.problem.noHelpAndFinished }}</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="完成率" label-align="right" align="center" width="100px">
                     <el-tag size="small">{{ (formMsg.problem.count != 0) ?
-                        (((formMsg.problem.needHelpAndfinished + formMsg.problem.noHelpAndfinished) /
+                        (((formMsg.problem.needHelpAndFinished + formMsg.problem.noHelpAndFinished) /
                             formMsg.problem.count) * 100).toFixed(0) : 0 }}%</el-tag>
                 </el-descriptions-item>
             </el-descriptions>
@@ -109,6 +109,7 @@
 
 <script>
 import { Search } from '@element-plus/icons-vue'
+import { useWindowScroll } from '@vueuse/core';
 import { mapState } from 'vuex'
 
 export default {
@@ -137,11 +138,11 @@ export default {
                     // 需要协助 审核数量
                     needHelpAndReview: 0,
                     // 需要协助 完成数量
-                    needHelpAndfinished: 0,
+                    needHelpAndFinished: 0,
                     // 不需要协助 未完成数量
                     noHelpAndUnfinished: 0,
                     // 不需要协助 完成数量
-                    noHelpAndfinished: 0
+                    noHelpAndFinished: 0
                 }
             },
             // 可编辑信息栏
@@ -248,11 +249,11 @@ export default {
              * 有审核的问题，显示黄色
              * 没有问题，传送带显示黑色 其他设备显示灰色
              */
-            if (shape['unfinishedCount'] > 0) {
+            if (shape['needHelpAndUnfinished'] > 0 || shape['noHelpAndUnfinished'] > 0) {
                 thumbnailContext.fillStyle = "red";
                 thumbnailContext.fill();
                 thumbnailContext.stroke();
-            } else if (shape['reviewCount']) {
+            } else if (shape['needHelpAndReview'] > 0) {
                 thumbnailContext.fillStyle = "yellow";
                 thumbnailContext.fill();
                 thumbnailContext.stroke();
@@ -513,10 +514,14 @@ export default {
         updatePlantData() {
             const that = this;
             var shapes = this.$store.state.shapes;
-            // 删除reviewCount、unfinishedCount，防止更新到地图文件中
+            // 删除各种count，防止更新到地图文件中
             for (let [key, value] of shapes) {
-                delete value.reviewCount;
-                delete value.unfinishedCount;
+                delete value.count;
+                delete value.needHelpAndUnfinished;
+                delete value.needHelpAndReview;
+                delete value.needHelpAndFinished;
+                delete value.noHelpAndUnfinished;
+                delete value.noHelpAndFinished;
             }
             return new Promise((resolve, reject) => {
                 this.$axiosInstance.post("/plant", JSON.parse(JSON.stringify(Array.from(shapes.values()))), {
@@ -599,49 +604,30 @@ export default {
         },
         // 问题点信息栏赋值
         setProblemCount() {
-            var deviceNum = null;
-            var stationNum = null;
-            if (!this.isEmpty(this.$store.state.choose)) {
-                const arr = this.$store.state.choose.split('+');
-                deviceNum = arr[0];
-                stationNum = arr[1];
+            if (this.$store.state.choose != '') {
+                const shape = this.$store.state.shapes.get(this.$store.state.choose);
+                this.formMsg.problem.count = shape['count'] == null ? 0 : shape['count'];
+                this.formMsg.problem.needHelpAndUnfinished = shape['needHelpAndUnfinished'] == null ? 0 : shape['needHelpAndUnfinished'];
+                this.formMsg.problem.needHelpAndReview = shape['needHelpAndReview'] == null ? 0 : shape['needHelpAndReview'];
+                this.formMsg.problem.needHelpAndFinished = shape['needHelpAndFinished'] == null ? 0 : shape['needHelpAndFinished'];
+                this.formMsg.problem.noHelpAndUnfinished = shape['noHelpAndUnfinished'] == null ? 0 : shape['noHelpAndUnfinished'];
+                this.formMsg.problem.noHelpAndFinished = shape['noHelpAndFinished'] == null ? 0 : shape['noHelpAndFinished'];
+            } else {
+                this.formMsg.problem.count = 0;
+                this.formMsg.problem.needHelpAndUnfinished = 0;
+                this.formMsg.problem.needHelpAndReview = 0;
+                this.formMsg.problem.needHelpAndFinished = 0;
+                this.formMsg.problem.noHelpAndUnfinished = 0;
+                this.formMsg.problem.noHelpAndFinished = 0;
+                this.$store.state.shapes.forEach((shape, key) => {
+                    this.formMsg.problem.count += shape['count'] == null ? 0 : shape['count'];
+                    this.formMsg.problem.needHelpAndUnfinished += shape['needHelpAndUnfinished'] == null ? 0 : shape['needHelpAndUnfinished'];
+                    this.formMsg.problem.needHelpAndReview += shape['needHelpAndReview'] == null ? 0 : shape['needHelpAndReview'];
+                    this.formMsg.problem.needHelpAndFinished += shape['needHelpAndFinished'] == null ? 0 : shape['needHelpAndFinished'];
+                    this.formMsg.problem.noHelpAndUnfinished += shape['noHelpAndUnfinished'] == null ? 0 : shape['noHelpAndUnfinished'];
+                    this.formMsg.problem.noHelpAndFinished += shape['noHelpAndFinished'] == null ? 0 : shape['noHelpAndFinished'];
+                });
             }
-            this.execCountRequest(deviceNum, stationNum, null, null).then(data => {
-                this.formMsg.problem.count = data;
-            })
-            this.execCountRequest(deviceNum, stationNum, true, 'unfinished').then(data => {
-                this.formMsg.problem.needHelpAndUnfinished = data;
-            })
-            this.execCountRequest(deviceNum, stationNum, true, 'review').then(data => {
-                this.formMsg.problem.needHelpAndReview = data;
-            })
-            this.execCountRequest(deviceNum, stationNum, true, 'finished').then(data => {
-                this.formMsg.problem.needHelpAndfinished = data;
-            })
-            this.execCountRequest(deviceNum, stationNum, false, 'unfinished').then(data => {
-                this.formMsg.problem.noHelpAndUnfinished = data;
-            })
-            this.execCountRequest(deviceNum, stationNum, false, 'finished').then(data => {
-                this.formMsg.problem.noHelpAndfinished = data;
-            })
-        },
-        // 执行count请求，setProblemCount()调用
-        execCountRequest(deviceNum, stationNum, isNeedHelp, status) {
-            return new Promise((resolve, reject) => {
-                this.$axiosInstance.get("/plant/problems/count", {
-                    params: {
-                        plant: this.$store.state.plant,
-                        deviceNum: deviceNum,
-                        stationNum: stationNum,
-                        isNeedHelp: isNeedHelp,
-                        status: status
-                    }
-                }).then(function (response) {
-                    resolve(response.data['count']);
-                }).catch(function (error) {
-                    reject(error);
-                })
-            })
         },
         // 跳转到未匹配问题点列表页
         toProblems(problemPage) {
