@@ -1,7 +1,8 @@
 <template>
     <!-- 显示地图 -->
     <section ref="section" id="main">
-        <canvas ref="map" :width="map.width" :height="map.height"> </canvas>
+        <canvas id="canvas" ref="map" :width="map.width" :height="map.height"
+            :style="dynamicBackgroundStyle"></canvas>
     </section>
 </template>
 
@@ -20,6 +21,7 @@ export default {
         // 地图中的点击事件，以选中设备
         this.$refs['map'].addEventListener('click', function (e) {
             const mapContext = that.$refs['map'].getContext("2d");
+            mapContext.globalAlpha = 1;
             const multiple = (1.0 + 0.05 * that.map.per);
             // 用foreach，无法使用break或return跳出循环，因此使用for
             for (let [key, value] of that.$store.state.shapes) {
@@ -41,6 +43,7 @@ export default {
 
         this.$refs['map'].addEventListener('dblclick', function (e) {
             const mapContext = that.$refs['map'].getContext("2d");
+            mapContext.globalAlpha = 1;
             const multiple = (1.0 + 0.05 * that.map.per);
             // 用foreach，无法使用break或return跳出循环，因此使用for
             for (let [key, value] of that.$store.state.shapes) {
@@ -71,7 +74,14 @@ export default {
         );
     },
     computed: {
-        ...mapState(['map'])
+        ...mapState(['map']),
+        // 地图动态背景
+        dynamicBackgroundStyle() {
+            return {
+                background: `url(/img/${this.$store.state.plant}Back.png) no-repeat center center`,
+                backgroundSize: '100% 100%',
+            };
+        }
     },
     methods: {
         /**
@@ -80,6 +90,7 @@ export default {
          */
         drawMap(shape, key, multiple) {
             const mapContext = this.$refs['map'].getContext("2d");
+            mapContext.globalAlpha = 1;
             mapContext.strokeStyle = "#696969";
             mapContext.beginPath();
             mapContext.rect(
@@ -118,6 +129,7 @@ export default {
         drawChoose(multiple) {
             const shape = this.$store.state.shapes.get(this.$store.state.choose);
             const mapContext = this.$refs['map'].getContext("2d");
+            mapContext.globalAlpha = 1;
             // 选中设备
             if (shape != null) {
                 mapContext.beginPath();
@@ -289,7 +301,7 @@ export default {
     background-size: 1em 1em;
     background-color: #ffffff;
     /* 设置透明度 */
-    opacity: 0.5;
+    opacity: 1;
 
     -webkit-user-select: none;
     /* 禁止双击选中文字的Webkit浏览器（如Chrome和Safari） */
@@ -303,7 +315,6 @@ export default {
 
 /* 地图区域的画板 */
 #main canvas {
-    background: white;
     /* 盒子边框 */
     border: 2px solid rgb(153, 153, 153);
 }
