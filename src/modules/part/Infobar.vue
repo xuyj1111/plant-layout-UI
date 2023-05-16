@@ -418,7 +418,8 @@ export default {
                             type: 'warning'
                         }).then(() => {
                             // 判断设备编号 + 岗位号是否存在
-                            if (this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
+                            if (this.formLabel.deviceNum + '+' + this.formLabel.stationNum != this.$store.state.choose
+                                && this.$store.state.shapes.has(this.formLabel.deviceNum + '+' + this.formLabel.stationNum)) {
                                 this.$message({
                                     showClose: true,
                                     message: '该设备编号 + 岗位号已存在！更新失败！',
