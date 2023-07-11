@@ -67,24 +67,38 @@
                 <el-table-column prop="detail" label="问题点描述" width="180">
                 </el-table-column>
                 <el-table-column prop="isNeedHelp" label="是否需要其他部门协助" width="250">
+                  <template v-slot="{ row }">
+                    <el-select v-model="row.isNeedHelp">
+                      <template #prefix>
+                        <button style="padding-left: 15px;">
+                        </button>
+                      </template>
+                      <el-option v-for="item in isNeedHelpOptions" :key="item" :label="item" :value="item">
+                      </el-option>
+                    </el-select>
+                  </template>
                 </el-table-column>
                 <el-table-column prop="picture" label="图片" width="180">
                     <template v-slot="{ row }">
                         <el-image style="width: 100px; height: 100px" :src="row.picture" :fit='"scale-down"'></el-image>
                     </template>
                 </el-table-column>
-                <el-table-column prop="status" label="状态" fixed="right">
-                    <template v-slot="{ row, $index }">
-                        <el-button v-if="row.status == '已完成'" type="success" @click="handleFinished(row.id, $index)"
-                            :disabled="$store.state.user != 'root'">{{
-                                row.status }}</el-button>
-                        <el-button v-else-if="row.status == '审核中'" type="warning" @click="handleReview(row.id, $index)">{{
-                            row.status }}</el-button>
-                        <el-button v-else-if="row.status == '未完成'" type="danger"
-                            @click="handleUnfinished(row.id, row.isNeedHelp, $index)">{{
-                                row.status }}</el-button>
-                    </template>
+                <el-table-column prop="remark" label="对策" width="180">
                 </el-table-column>
+              <el-table-column prop="returnReason" label="退回理由" width="180">
+              </el-table-column>
+              <el-table-column prop="status" label="状态" fixed="right">
+                <template v-slot="{ row, $index }">
+                  <el-button v-if="row.status == '已完成'" type="success" @click="handleFinished(row.id, $index)"
+                             :disabled="$store.state.user != 'root'">{{
+                      row.status }}</el-button>
+                  <el-button v-else-if="row.status == '审核中'" type="warning" @click="handleReview(row.id, $index)">{{
+                      row.status }}</el-button>
+                  <el-button v-else-if="row.status == '未完成'" type="danger"
+                             @click="handleUnfinished(row.id, row.isNeedHelp, $index)">{{
+                      row.status }}</el-button>
+                </template>
+              </el-table-column>
             </el-table>
         </div>
 
@@ -109,67 +123,68 @@ export default {
     },
     data() {
         return {
-            deviceNum: '',
-            stationNum: '',
-            search: '',
-            statusOptions: [{
-                value: 'all',
-                label: '全部状态'
-            }, {
-                value: 'unfinished',
-                label: '未完成'
-            }, {
-                value: 'review',
-                label: '审核中'
-            }, {
-                value: 'finished',
-                label: '已完成'
-            }],
-            status: 'all',
-            department: 'all',
-            departOptions: [{
-                value: 'all',
-                label: '全部部门'
-            }, {
-                value: 'ZT1-保全',
-                label: 'ZT1-保全'
-            }, {
-                value: 'ZT2-组装技术',
-                label: 'ZT2-组装技术'
-            }, {
-                value: 'ZT3-加工技术',
-                label: 'ZT3-加工技术'
-            }, {
-                value: '改善班',
-                label: '改善班'
-            }, {
-                value: '供给中心',
-                label: '供给中心'
-            }],
-            tableData: [],
-            count: 0,
-            page: 0,
-            ROLE_VALUE: {
-                'root': '管理员账号：',
-                'assist': '辅助部门：',
-                'local': '现场部门：'
-            },
-            USER_VALUE: {
-                'root': 'root',
-                'zt1': 'ZT1-保全',
-                'zt2': 'ZT2-组装技术',
-                'zt3': 'ZT3-加工技术',
-                'improve': '改善班',
-                'provide': '供给中心',
-                'assy': '组装',
-                'logistics': '物流',
-                'case': '外壳',
-                'gear': '齿轮',
-                'pulley': '带轮',
-                'differential': '差速器',
-                'heat': '热处理'
-            },
-            datetimeRange: null
+          deviceNum: '',
+          stationNum: '',
+          search: '',
+          statusOptions: [{
+              value: 'all',
+              label: '全部状态'
+          }, {
+              value: 'unfinished',
+              label: '未完成'
+          }, {
+              value: 'review',
+              label: '审核中'
+          }, {
+              value: 'finished',
+              label: '已完成'
+          }],
+          status: 'all',
+          department: 'all',
+          departOptions: [{
+              value: 'all',
+              label: '全部部门'
+          }, {
+              value: 'ZT1-保全',
+              label: 'ZT1-保全'
+          }, {
+              value: 'ZT2-组装技术',
+              label: 'ZT2-组装技术'
+          }, {
+              value: 'ZT3-加工技术',
+              label: 'ZT3-加工技术'
+          }, {
+              value: '改善班',
+              label: '改善班'
+          }, {
+              value: '供给中心',
+              label: '供给中心'
+          }],
+          tableData: [],
+          count: 0,
+          page: 0,
+          ROLE_VALUE: {
+              'root': '管理员账号：',
+              'assist': '辅助部门：',
+              'local': '现场部门：'
+          },
+          USER_VALUE: {
+              'root': 'root',
+              'zt1': 'ZT1-保全',
+              'zt2': 'ZT2-组装技术',
+              'zt3': 'ZT3-加工技术',
+              'improve': '改善班',
+              'provide': '供给中心',
+              'assy': '组装',
+              'logistics': '物流',
+              'case': '外壳',
+              'gear': '齿轮',
+              'pulley': '带轮',
+              'differential': '差速器',
+              'heat': '热处理'
+          },
+          datetimeRange: null,
+          isNeedHelpOptions: ['ZT1-保全', 'ZT2-组装技术', 'ZT3-加工技术', '改善班', '供给中心', '否']
         }
     },
     mounted() {
@@ -379,7 +394,7 @@ export default {
                 })
             }
         },
-        // page赋值 
+        // page赋值
         setPage(val) {
             this.page = val - 1;
         },
@@ -598,6 +613,9 @@ export default {
                 });
             }
         },
+      handleSaveItem(id, index) {
+
+      },
         // 判断字符串是否为空
         isEmpty(str) {
             if (str == null || str.trim() == "") {
