@@ -70,11 +70,16 @@
         </el-table-column>
         <el-table-column prop="isNeedHelp" label="是否需要其他部门协助" width="200">
           <template v-slot="{ row }" v-if="$store.state.user == 'root' || ($store.state.role == 'local' && $store.state.plant == $store.state.user)">
-            <el-select v-model="row.isNeedHelp" style="float: left;width: 140px">
-              <el-option v-for="item in isNeedHelpOptions" :key="item" :label="item" :value="item">
-              </el-option>
-            </el-select>
-            <el-button type="success" style="float: right;width: 20px" @click="handleSaveHelp(row.id, row.isNeedHelp)">✔</el-button>
+            <div v-if="row.status == '已完成'">
+              {{row.isNeedHelp}}
+            </div>
+            <div v-else>
+              <el-select v-model="row.isNeedHelp" style="float: left;width: 140px">
+                <el-option v-for="item in isNeedHelpOptions" :key="item" :label="item" :value="item">
+                </el-option>
+              </el-select>
+              <el-button type="success" style="float: right;width: 20px" @click="handleSaveHelp(row.id, row.isNeedHelp, row.status)">✔</el-button>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="picture" label="图片" width="180">
@@ -235,7 +240,13 @@ export default {
       // 退回index
       returnIndex: null,
       // 退回理由
-      returnReason: null
+      returnReason: null,
+      // status中文转value
+      statusValues: {
+        "未完成": "unfinished",
+        "审核中": "review",
+        "已完成": "finished"
+      }
     }
   },
   mounted() {
@@ -457,24 +468,6 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        // new Promise((resolve, reject) => {
-        //   this.$axiosInstance.put("/plant/problem", {}, {
-        //     params: {
-        //       id: id,
-        //       status: 'unfinished'
-        //     }
-        //   }).then(function (response) {
-        //     resolve(response.data);
-        //   }).catch(function (error) {
-        //     reject(error);
-        //   })
-        // }).then(() => {
-        //   this.tableData[index]['status'] = '未完成';
-        // })
-        // this.$message({
-        //   type: 'success',
-        //   message: '已退回!'
-        // });
         this.dialogVisible = true;
         this.returnId = id;
         this.returnIndex = index;
@@ -503,7 +496,8 @@ export default {
                 id: id,
                 status: 'finished',
                 returnReason: '',
-                isNeedHelp: isNeedHelp
+                isNeedHelp: isNeedHelp,
+                oldStatus: this.statusValues[this.tableData[index]['status']]
               }
             }).then(function (response) {
               resolve(response.data);
@@ -533,24 +527,6 @@ export default {
         }).catch(action => {
           // 退回操作，弹窗输入“退回理由”
           if (action == 'cancel') {
-            // new Promise((resolve, reject) => {
-            //   this.$axiosInstance.put("/plant/problem", {}, {
-            //     params: {
-            //       id: id,
-            //       status: 'unfinished'
-            //     }
-            //   }).then(function (response) {
-            //     resolve(response.data);
-            //   }).catch(function (error) {
-            //     reject(error);
-            //   })
-            // }).then(() => {
-            //   this.tableData[index]['status'] = '未完成';
-            // })
-            // this.$message({
-            //   type: 'error',
-            //   message: '退回成功!'
-            // });
             this.dialogVisible = true;
             this.returnId = id;
             this.returnIndex = index;
@@ -592,7 +568,8 @@ export default {
                 status: 'finished',
                 remark: remark,
                 returnReason: '',
-                isNeedHelp: isNeedHelp
+                isNeedHelp: isNeedHelp,
+                oldStatus: this.statusValues[this.tableData[index]['status']]
               }
             }).then(function (response) {
               resolve(response.data);
@@ -648,7 +625,8 @@ export default {
                   id: id,
                   status: 'finished',
                   remark: remark,
-                  returnReason: ''
+                  returnReason: '',
+                  oldStatus: this.statusValues[this.tableData[index]['status']]
                 }
               }).then(function (response) {
                 resolve(response.data);
@@ -710,7 +688,8 @@ export default {
                 id: id,
                 status: 'review',
                 remark: remark,
-                isNeedHelp: isNeedHelp
+                isNeedHelp: isNeedHelp,
+                oldStatus: this.statusValues[this.tableData[index]['status']]
               }
             }).then(function (response) {
               resolve(response.data);
@@ -718,8 +697,6 @@ export default {
               reject(error);
             })
           }).then((data) => {
-            console.log('hahahha')
-            console.log(data);
             if (data.affectedRows == 0) {
               this.$message({
                 type: 'warning',
@@ -753,7 +730,7 @@ export default {
       }
     },
     // “是否需要其他部门协助”保存
-    handleSaveHelp(id, isNeedHelp) {
+    handleSaveHelp(id, isNeedHelp, status) {
       this.$confirm('是否修改部门？', '提示', {
         confirmButtonText: '修改',
         confirmButtonClass: 'greenClass',
@@ -764,18 +741,26 @@ export default {
           this.$axiosInstance.put("/plant/problem/isNeedHelp", {}, {
             params: {
               id: id,
-              isNeedHelp: isNeedHelp
+              isNeedHelp: isNeedHelp,
+              oldStatus: this.statusValues[status]
             }
           }).then(function (response) {
             resolve(response.data);
           }).catch(function (error) {
             reject(error);
           })
-        }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '已修改!'
-          });
+        }).then((data) => {
+          if (data.affectedRows == 0) {
+            this.$message({
+              type: 'warning',
+              message: '操作失败！请刷新页面'
+            });
+          } else {
+            this.$message({
+              type: 'success',
+              message: '已修改!'
+            });
+          }
         }).catch(() => {
           this.$message({
             type: 'warning',
@@ -809,13 +794,13 @@ export default {
         });
         return;
       }
-
       new Promise((resolve, reject) => {
         this.$axiosInstance.put("/plant/problem", {}, {
           params: {
             id: this.returnId,
             status: 'unfinished',
-            returnReason: this.returnReason
+            returnReason: this.returnReason,
+            oldStatus: this.statusValues[this.tableData[this.returnIndex]['status']]
           }
         }).then(function (response) {
           resolve(response.data);
@@ -835,11 +820,11 @@ export default {
             type: 'success',
             message: '已退回!'
           });
-          this.dialogVisible = false;
-          this.returnId = null;
-          this.returnIndex = null;
-          this.returnReason = null;
         }
+        this.dialogVisible = false;
+        this.returnId = null;
+        this.returnIndex = null;
+        this.returnReason = null;
       }).catch(() => {
         this.$message({
           type: 'warning',
