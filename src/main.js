@@ -9,12 +9,14 @@ import Vuex from 'vuex'
 import store from './store'
 
 const app = createApp(App);
+const currentUrl = window.location.href;
+const targetIp = currentUrl.split('/')[2].split(':')[0];
 
 // 设置 axios 对象为全局变量
 app.config.globalProperties.$axios = axios;
 // 设置 axiosInstance 对象为全局变量
 app.config.globalProperties.$axiosInstance = axios.create({
-    baseURL: 'http://localhost:8889/api',
+    baseURL: 'http://' + targetIp + ':8889/api',
     timeout: 3000,
     responseType: 'json',
     headers: {}
